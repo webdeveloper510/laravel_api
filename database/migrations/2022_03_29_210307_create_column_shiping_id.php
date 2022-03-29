@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePostsTable extends Migration
+class CreateColumnShipingId extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,9 @@ class CreatePostsTable extends Migration
      */
     public function up()
     {
-        Schema::table('shipment_api', function (Blueprint $table) {
-     $table->id();
-    $table->string('reference_id');
-    $table->string('delivery_time');
-    $table->string('items');
-    $table->string('waypoint');
-    $table->string('user_id');
-
-    $table->timestamps();
+        Schema::table('shipment', function (Blueprint $table) {
+            //
+            $table->string('shipping_id');
         });
     }
 
@@ -32,7 +26,7 @@ class CreatePostsTable extends Migration
      */
     public function down()
     {
-        Schema::table('shipment_api', function (Blueprint $table) {
+        Schema::table('shipment', function (Blueprint $table) {
             //
         });
     }

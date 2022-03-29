@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\insertshippingdata;
+  
+
 class pedidosyaApiController extends Controller
 {
     //-----------------------Client Module--------------------------
@@ -53,14 +56,14 @@ class pedidosyaApiController extends Controller
     
     $headers = array(
        "Content-Type: application/json",
-       "Authorization:1763-251253-b130d54a-0664-4aae-4ea5-277737608457"
+       "Authorization:1763-292004-32e50b5e-2969-4174-7f26-38216b932f41"
     );
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     
     $data = '{
   "referenceId": "Client Internal Reference",
   "isTest": false,
-  "deliveryTime": "2022-03-27T19:00:00Z",
+  "deliveryTime": "2022-04-03T19:00:00Z",
   "notificationMail": "email@email.com",
   "volume": 20.02,
   "weight": 0.8,
@@ -114,6 +117,9 @@ class pedidosyaApiController extends Controller
     }
   ]
 }';
+
+
+
     
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     
@@ -122,8 +128,24 @@ class pedidosyaApiController extends Controller
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
     
     $resp = curl_exec($curl);
+    $data = json_decode($resp);
+    return $data;
+    if($data->id){
+      
+      $insertshippingdata = new insertshippingdata;
+      $insertshippingdata->user_id = "text";
+      $insertshippingdata->reference_id = "text";
+      $insertshippingdata->items = "text";
+      $insertshippingdata->waypoint ="text";
+      $insertshippingdata->delivery_time = "text";
+      $insertshippingdata->save();
+      $lastInsertedId= $insertshippingdata->id;
+      $shiiping_id= $data->id;
+      $affectedRows = insertshippingdata::where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
+      return $resp;
+    }
     curl_close($curl);
-    return $resp
+   
     ;
     
     }
