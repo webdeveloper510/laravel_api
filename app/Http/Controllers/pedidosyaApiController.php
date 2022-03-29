@@ -128,9 +128,8 @@ class pedidosyaApiController extends Controller
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
     
     $resp = curl_exec($curl);
-    $data = json_decode($resp);
-    return $data;
-    if($data->id){
+    $data = json_decode($resp, true);
+    if($data['id']){
       
       $insertshippingdata = new insertshippingdata;
       $insertshippingdata->user_id = "text";
@@ -140,7 +139,7 @@ class pedidosyaApiController extends Controller
       $insertshippingdata->delivery_time = "text";
       $insertshippingdata->save();
       $lastInsertedId= $insertshippingdata->id;
-      $shiiping_id= $data->id;
+      $shiiping_id= $data['id'];
       $affectedRows = insertshippingdata::where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
       return $resp;
     }
