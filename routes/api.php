@@ -30,3 +30,5 @@ Route::get('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShipp
 Route::get('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
 
 Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
+
+//Route::get('/cancelshippingorder', [adminController::class, 'cancelshippingorder']);
