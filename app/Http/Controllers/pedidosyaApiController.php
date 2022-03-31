@@ -167,7 +167,7 @@ class pedidosyaApiController extends Controller
         
         curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);        
                
-                       
+                       curl_setopt($curl, CURLOPT_POSTFIELDS, $data);  
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         
@@ -234,11 +234,84 @@ class pedidosyaApiController extends Controller
 
      }
 
+      function EstimateShippingOrder(){
 
-    }
-
- 
 
         
+        $url = "https://courier-api.pedidosya.com/v1/estimates/shippings";
 
-
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        
+        $headers = array(
+          "Content-Type: application/json",
+          "Authorization:1763-311619-54e88082-dd5e-4dc3-6616-2f548c241e3b"
+       );
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        
+        $data = '{
+            "referenceId": "Client Internal Reference",
+            "isTest": true,
+            "deliveryTime": "2020-06-24T19:00:00Z",
+            "notificationMail": "email@email.com",
+            "volume": 20.02,
+            "weight": 0.8,
+            "items": [
+              {
+                "categoryId": 123,
+                "value": 1250.6,
+                "description": "Unos libros de Kotlin y una notebook.",
+                "sku": "ABC123",
+                "quantity": 1,
+                "volume": 10.01,
+                "weight": 0.5
+              },
+              {
+                "categoryId": 124,
+                "value": 250,
+                "description": "Una remera",
+                "sku": "ABC124",
+                "quantity": 1,
+                "volume": 10.01,
+                "weight": 0.3
+              }
+            ],
+            "waypoints": [
+              {
+                "type": "PICK_UP",
+                "addressStreet": "Plaza Independencia 755",
+                "addressAdditional": "Piso 6 Recepción",
+                "city": "Montevideo",
+                "latitude": -34.905988,
+                "longitude": -56.199592,
+                "phone": "+59898765432",
+                "name": "Oficina Ciudad Vieja",
+                "instructions": "El ascensor esta roto.",
+                "order": 1
+              },
+              {
+                "type": "DROP_OFF",
+                "latitude": -34.9138414,
+                "longitude": -56.1837661,
+                "addressStreet": "La Cumparsita 1475",
+                "addressAdditional": "Piso 1, Oficina Delivery",
+                "city": "Montevideo",
+                "phone": "+59812345678",
+                "name": "Agustin",
+                "instructions": "Entregar en mano",
+                "order": 2
+              }
+            ]
+        }';
+        
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        
+        $resp = curl_exec($curl);
+        curl_close($curl);
+        return $resp;
+      }
+    }

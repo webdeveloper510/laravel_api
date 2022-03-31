@@ -31,6 +31,8 @@ Route::get('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShipp
 
 Route::get('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
 
+Route::get('/CreateEstimateShipping', [pedidosyaApiController::class, 'EstimateShippingOrder']);
+
 Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
 
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
