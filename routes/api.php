@@ -1,5 +1,7 @@
 <?php
 use App\Http\Controllers\pedidosyaApiController;
+use App\Http\Controllers\cabifyController;
+
 use App\Http\Controllers\adminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -31,4 +33,7 @@ Route::get('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShip
 
 Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
 
-//Route::get('/cancelshippingorder', [adminController::class, 'cancelshippingorder']);
+Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
+
+Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
+

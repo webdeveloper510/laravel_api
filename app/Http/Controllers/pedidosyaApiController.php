@@ -122,11 +122,11 @@ class pedidosyaApiController extends Controller
 
     
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-    
-    //for debug only!
+  
+    //for debug only
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    
+  
     $resp = curl_exec($curl);
     $data = json_decode($resp, true);
     if($data['id']){
@@ -145,9 +145,9 @@ class pedidosyaApiController extends Controller
     }
     curl_close($curl);
    
-    ;
+
+  }   
     
-    }
 
 
 
@@ -203,9 +203,36 @@ class pedidosyaApiController extends Controller
 
      }
 
+     function Getaccesstoken(){
 
 
+      $url = " https://cabify-sandbox.com/auth/api/authorization";
 
+      $curl = curl_init($url);
+      curl_setopt($curl, CURLOPT_URL, $url);
+      curl_setopt($curl, CURLOPT_POST, true);
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+      
+      $headers = array(
+         "Content-Type: application/json",
+      );
+      curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+      
+      $data = '{
+        "access_token":"1Lex4yzYz0M1NoMa-kfE1Uj3BdDd18",
+        "expires_in":2591999,
+        "token_type":"Bearer"
+      }';
+      
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+      
+      $resp = curl_exec($curl);
+      curl_close($curl);
+      return $resp;
+
+     }
 
 
     }
