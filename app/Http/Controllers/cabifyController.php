@@ -22,8 +22,8 @@ class cabifyController extends Controller
         
         $data = '{
             "grant_type":"client_credentials",
-            "client_id":"OAUTH_ID",
-            "client_secret":"SECRET"
+            "client_id":"49834944447749338a7f17c62bfb8de0",
+            "client_secret":"MK84LtOM-WxtYLIZ"
         }';
         
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
@@ -51,6 +51,7 @@ curl_setopt_array($curl, array(
   CURLOPT_POSTFIELDS =>'{"query":"","variables":{"optimize":true,"senderId":"c432e92c224370bccf5715eae53ff94a","productId":"db10033ac9b52ac4e1d785107f3e96aa","deliveryPoints":[{"name":"PickUp point","instr":"https://url.example","addr":"Calle de Évora","num":"1","city":"Madrid","country":"Spain","loc":[40.3865045,-3.718262699999999],"receiver":{"mobileCc":"34","mobileNum":"666778899","name":"John Doe"}},{"name":"Destination point","addr":"Calle de Évora","num":"1","city":"Madrid","country":"Spain","loc":[40.3865045,-3.718262699999999],"receiver":{"mobileCc":"34","mobileNum":"666998877","name":"Jane Doe"}}]}}',
   CURLOPT_HTTPHEADER => array(
     'Content-Type: application/json',
+    'authorization:Bearer 9pnwFzH2BGnRBLtkCRsXXRMynjs2ke'
   ),
 ));
 
