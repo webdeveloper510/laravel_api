@@ -31,7 +31,9 @@ Route::get('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShipp
 
 Route::get('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
 
-Route::get('/CreateEstimateShipping', [pedidosyaApiController::class, 'EstimateShippingOrder']);
+Route::post('/CreateEstimateShipping', [pedidosyaApiController::class, 'EstimateShippingOrder']);
+
+Route::post('/EstimateWaypointsCoverage', [pedidosyaApiController::class, 'EstimateWaypointsCoverage']);
 
 Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
 
