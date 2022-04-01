@@ -57,6 +57,18 @@ curl_setopt_array($curl, array(
 
 $response = curl_exec($curl);
 
+if($data['id']){
+      
+  $insertcabifydata = new insertcabifydata;
+  $insertshippingdata->deliverypoint = "text";
+  $insertshippingdata->sender ="text";
+  $insertshippingdata->save();
+  $lastInsertedId= $insertcabifydata->id;
+  $shiiping_id= $data['id'];
+  $affectedRows = insertshippingdata::where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
+  return $resp;
+}
+
 curl_close($curl);
 echo $response;
     }

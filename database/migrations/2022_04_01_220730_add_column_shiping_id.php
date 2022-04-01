@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateInsertcabifydatasTable extends Migration
+class AddColumnShipingId extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,9 @@ class CreateInsertcabifydatasTable extends Migration
      */
     public function up()
     {
-        Schema::create('insertcabifydatas', function (Blueprint $table) {
-            $table->id();
-            $table->string('timestamps');
-            $table->string('deliverypoint');
-            $table->string('sender');
+        Schema::table('insertcabifydatas', function (Blueprint $table) {
+            //
+            $table->string('shiping_id');
         });
     }
 
@@ -28,6 +26,8 @@ class CreateInsertcabifydatasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('insertcabifydatas');
+        Schema::table('insertcabifydatas', function (Blueprint $table) {
+            //
+        });
     }
 }
