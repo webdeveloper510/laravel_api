@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
-
-use App\Models\insertshippingdata;
+use App\Models\shipmentModel;
+use App\Models\CreateEstimatesTable;
   
 
 class pedidosyaApiController extends Controller
@@ -131,16 +130,16 @@ class pedidosyaApiController extends Controller
     $data = json_decode($resp, true);
     if($data['id']){
       
-      $insertshippingdata = new insertshippingdata;
-      $insertshippingdata->user_id = "text";
-      $insertshippingdata->reference_id = "text";
-      $insertshippingdata->items = "text";
-      $insertshippingdata->waypoint ="text";
-      $insertshippingdata->delivery_time = "text";
-      $insertshippingdata->save();
-      $lastInsertedId= $insertshippingdata->id;
+      $shipment = new shipmentModel;
+      $shipment->user_id = "text";
+      $shipment->reference_id = "text";
+      $shipment->items = "text";
+      $shipment->waypoint ="text";
+      $shipment->delivery_time = "text";
+      $shipment->save();
+      $lastInsertedId= $shipment->id;
       $shiiping_id= $data['id'];
-      $affectedRows = insertshippingdata::where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
+      $affectedRows = $shipment->where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
       return $resp;
     }
     curl_close($curl);
@@ -165,9 +164,7 @@ class pedidosyaApiController extends Controller
            "Authorization:1763-251253-b130d54a-0664-4aae-4ea5-277737608457"
         );
         
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);        
-               
-                       curl_setopt($curl, CURLOPT_POSTFIELDS, $data);  
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         
@@ -356,4 +353,44 @@ class pedidosyaApiController extends Controller
    
     }
 
+    function EstimateShipping (){
+    $url = "https://courier-api.pedidosya.com/v1/estimates/coverage";
+
+    $curl = curl_init($url);
+      curl_setopt($curl, CURLOPT_URL, $url);
+      curl_setopt($curl, CURLOPT_POST, true);
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+      
+      $headers = array(
+        "Content-Type: application/json",
+        "Authorization:1763-311722-2b9dec88-f50c-4a16-5715-3c247b050714"
+     );
+      curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+      
+      $data = '{
+        "waypoints": [
+          {
+            "addressStreet": "Plaza Independencia 759",
+            "city": "Montevideo"
+          },
+          {
+            "addressStreet": "La Cumparsita 1475",
+            "city": "Montevideo",
+            "latitude": -34.9143156,
+            "longitude": -56.1814273
+          }
+        ]
+      }';
+      
+      curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+      
+      $resp = curl_exec($curl);
+      curl_close($curl);
+      return $resp;
+   
+
     }
+
+  }
