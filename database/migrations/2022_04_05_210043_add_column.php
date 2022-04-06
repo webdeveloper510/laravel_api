@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnShipingId extends Migration
+class AddColumn extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class AddColumnShipingId extends Migration
      */
     public function up()
     {
-        Schema::table('insertcabifydatas', function (Blueprint $table) {
-            //
-            $table->string('shiping_id');
+        Schema::table('shipment', function (Blueprint $table) {
+            $table->string('price');
         });
     }
 
@@ -26,7 +25,7 @@ class AddColumnShipingId extends Migration
      */
     public function down()
     {
-        Schema::table('insertcabifydatas', function (Blueprint $table) {
+        Schema::table('shipment', function (Blueprint $table) {
             //
         });
     }

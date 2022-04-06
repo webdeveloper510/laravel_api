@@ -56,8 +56,8 @@ curl_setopt_array($curl, array(
     "city":"Madrid",
     "country":"Spain",
     "loc":[
-       40.3865045,
-       -3.718262699999999
+       ,40.3865045
+       -70.560783
     ],
     "receiver":{
        "mobileCc":"34",
@@ -72,8 +72,8 @@ curl_setopt_array($curl, array(
     "city":"Madrid",
     "country":"Spain",
     "loc":[
-       40.3865045,
-       -3.718262699999999
+      -33.417019,
+      -70.560783
     ],
     "receiver":{
        "mobileCc":"34",
@@ -83,7 +83,7 @@ curl_setopt_array($curl, array(
  }
 ], $optimize: true) {\\r\\n  createDelivery(deliveryInput: {senderId: c432e92c224370bccf5715eae53ff94a, productId: db10033ac9b52ac4e1d785107f3e96aa, deliveryPoints: $deliveryPoints, optimize: true}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}","variables":{}}',
   CURLOPT_HTTPHEADER => array(
-    'Authorization: Bearer wn2iJLu8kkvmnKcM5vUncHeUTRW1eD',
+    'Authorization: Bearer kb2xwbEBF0EvbmDK2v9hASQRjkggBY',
     'Content-Type: application/json'
   ),
 ));
