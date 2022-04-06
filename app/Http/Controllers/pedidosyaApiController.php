@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\shipmentModel;
-use App\Models\CreateEstimatesTable;
+use App\Models\Estimate;
   
 
 class pedidosyaApiController extends Controller
@@ -353,8 +353,9 @@ class pedidosyaApiController extends Controller
    
     }
 
+
     function EstimateShipping (){
-    $url = "https://courier-api.pedidosya.com/v1/estimates/coverage";
+    $url = "https://courier-api.pedidosya.com/v1/estimates/shippings";
 
     $curl = curl_init($url);
       curl_setopt($curl, CURLOPT_URL, $url);
@@ -363,34 +364,95 @@ class pedidosyaApiController extends Controller
       
       $headers = array(
         "Content-Type: application/json",
-        "Authorization:1763-311722-2b9dec88-f50c-4a16-5715-3c247b050714"
+        "Authorization:1763-052142-7b5bf341-b8d8-4f43-7661-1eedecc91669"
      );
       curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
       
-      $data = '{
-        "waypoints": [
-          {
-            "addressStreet": "Plaza Independencia 759",
-            "city": "Montevideo"
-          },
-          {
-            "addressStreet": "La Cumparsita 1475",
-            "city": "Montevideo",
-            "latitude": -34.9143156,
-            "longitude": -56.1814273
-          }
-        ]
-      }';
+  $data = '{
+  "referenceId": "Client Internal Reference",
+  "isTest": true,
+  "deliveryTime": "2020-06-24T19:00:00Z",
+  "notificationMail": "email@email.com",
+  "volume": 20.02,
+  "weight": 0.8,
+  "items": [
+    {
+      "categoryId": 123,
+      "value": 1250.6,
+      "description": "Unos libros de Kotlin y una notebook.",
+      "sku": "ABC123",
+      "quantity": 1,
+      "volume": 10.01,
+      "weight": 0.5
+    },
+    {
+      "categoryId": 124,
+      "value": 250,
+      "description": "Una remera",
+      "sku": "ABC124",
+      "quantity": 1,
+      "volume": 10.01,
+      "weight": 0.3
+    }
+  ],
+  "waypoints": [
+    {
+      "type": "PICK_UP",
+      "addressStreet": "Plaza Independencia 755",
+      "addressAdditional": "Piso 6 Recepción",
+      "city": "Montevideo",
+      "latitude": -33.417019,
+      "longitude": -70.560783,
+      "phone": "+59898765432",
+      "name": "Oficina Ciudad Vieja",
+      "instructions": "El ascensor esta roto.",
+      "order": 1
+    },
+    {
+      "type": "DROP_OFF",
+      "latitude": -33.417019,
+      "longitude": -70.560783,
+      "addressStreet": "La Cumparsita 1475",
+      "addressAdditional": "Piso 1, Oficina Delivery",
+      "city": "Montevideo",
+      "phone": "+59812345678",
+      "name": "Agustin",
+      "instructions": "Entregar en mano",
+      "order": 2
+    }
+  ]
+}';
       
-      curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
-      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-      
-      $resp = curl_exec($curl);
-      curl_close($curl);
+     
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);  
+    //for debug only
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+  
+    $resp = curl_exec($curl);
+    $data = json_decode($resp, true);
+    // echo "<pre>"; 
+    // print_r($data);die;
+    
+    if($data){      
+      $estimate = new Estimate;
+      $estimate->referenceId = $data['referenceId'];
+      $estimate->deliveryTime = json_encode($data['deliveryTime']);
+      $estimate->items =json_encode($data['items']);
+      $estimate->waypoints = json_encode($data['waypoints']);
+      $estimate->price = json_encode($data['price']);
+      $estimate->save();
       return $resp;
+    }
+    curl_close($curl);
    
 
-    }
+  }
 
   }
+
+
+  
+
+
+    

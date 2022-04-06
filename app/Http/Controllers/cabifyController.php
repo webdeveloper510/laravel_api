@@ -36,10 +36,10 @@ class cabifyController extends Controller
     }
 
 
-    function PostCreateDelivery(){
-      $curl = curl_init();
-
-curl_setopt_array($curl, array(
+  function PostCreateDelivery(){
+  $curl = curl_init();
+    
+  curl_setopt_array($curl, array(
   CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => '',
@@ -82,28 +82,16 @@ curl_setopt_array($curl, array(
     }
  }
 ], $optimize: true) {\\r\\n  createDelivery(deliveryInput: {senderId: c432e92c224370bccf5715eae53ff94a, productId: db10033ac9b52ac4e1d785107f3e96aa, deliveryPoints: $deliveryPoints, optimize: true}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}","variables":{}}',
-  CURLOPT_HTTPHEADER => array(
+   CURLOPT_HTTPHEADER => array(
     'Authorization: Bearer wn2iJLu8kkvmnKcM5vUncHeUTRW1eD',
     'Content-Type: application/json'
   ),
 ));
 
 $response = curl_exec($curl);
-
 curl_close($curl);
 echo $response;
 
-if($data['id']){
-      
-  $insertcabifydata = new insertcabifydata;
-  $insertshippingdata->deliverypoint = "text";
-  $insertshippingdata->sender ="text";
-  $insertshippingdata->save();
-  $lastInsertedId= $insertcabifydata->id;
-  $shiiping_id= $data['id'];
-  $affectedRows = insertshippingdata::where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
-  return $resp;
-}
 
     }
 }
