@@ -35,9 +35,13 @@ Route::post('/CreateEstimateShipping', [pedidosyaApiController::class, 'Estimate
 
 Route::post('/EstimateWaypointsCoverage', [pedidosyaApiController::class, 'EstimateWaypointsCoverage']);
 
+Route::post('/estimateShipping', [pedidosyaApiController::class, 'EstimateShipping']);
+
 Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
 
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
 
 Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
+
+
 
