@@ -43,5 +43,8 @@ Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
 
 Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
 
+Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
+
+
 
 
