@@ -56,7 +56,7 @@ class pedidosyaApiController extends Controller
     
     $headers = array(
        "Content-Type: application/json",
-       "Authorization:1763-292004-32e50b5e-2969-4174-7f26-38216b932f41"
+       "Authorization:1763-292224-e5f544f6-dc2e-4fb9-59cd-9b61a837a455"
     );
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     
@@ -129,6 +129,7 @@ class pedidosyaApiController extends Controller
     
     $resp = curl_exec($curl);
     $data = json_decode($resp, true);
+    
     if($data['id']){
       
       $insertshippingdata = new insertshippingdata;
