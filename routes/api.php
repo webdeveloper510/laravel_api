@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\pedidosyaApiController;
 use App\Http\Controllers\cabifyController;
+use App\Http\Controllers\FexController;
 
 use App\Http\Controllers\adminController;
 use Illuminate\Http\Request;
@@ -45,6 +46,6 @@ Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
 
 Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
 
+Route::post('/FexEstimate', [FexController::class, 'FexCotizer']);
 
-
-
+Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
