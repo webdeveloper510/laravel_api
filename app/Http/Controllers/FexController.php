@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 class FexController extends Controller
 {
+<<<<<<< HEAD
     function FexCotizer(){
 
         $url = "https://fex.cl/fex_api/externo/flete/cotizar";
@@ -22,6 +23,27 @@ class FexController extends Controller
       curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
       
       $data = '{
+=======
+
+
+ function Cotizar(){
+
+  
+    $url = " https://fex.cl/fex_api/externo/flete/cotizar";
+
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    
+    $headers = array(
+      "Content-Type: application/json",
+      //"Authorization:1763-311722-2b9dec88-f50c-4a16-5715-3c247b050714"
+   );
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    
+    $data = '{
+>>>>>>> 2becf3739ac4ec3120b972e6f3177baeee544f20
         "acceso":"DEB454D-A086639-8CD60D0-77C",
         "ori_lat": -33.553788,
         "ori_lng": -70.656825,
@@ -29,6 +51,7 @@ class FexController extends Controller
         "des_lng": -70.597801,
         "vehiculo": 5,
         "reg_origen":0
+<<<<<<< HEAD
       }';
       
       curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
@@ -83,4 +106,17 @@ class FexController extends Controller
         return $resp;
   
     }
+=======
+    }';
+    
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    
+    $resp = curl_exec($curl);
+    curl_close($curl);
+    return $resp;
+
+     }
+>>>>>>> 2becf3739ac4ec3120b972e6f3177baeee544f20
 }

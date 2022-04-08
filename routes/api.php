@@ -40,6 +40,7 @@ Route::post('/estimateShipping', [pedidosyaApiController::class, 'EstimateShippi
 
 Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
 
+
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
 
 Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
@@ -48,4 +49,12 @@ Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
 
 Route::post('/FexEstimate', [FexController::class, 'FexCotizer']);
 
+<<<<<<< HEAD
 Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
+=======
+Route::post('/FexEstimate', [FexController::class, 'Cotizar']);
+
+
+
+
+>>>>>>> 2becf3739ac4ec3120b972e6f3177baeee544f20
