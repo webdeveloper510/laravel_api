@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnInShipmentTable extends Migration
+class DropColumnInShipmentTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,8 @@ class AddColumnInShipmentTable extends Migration
     public function up()
     {
         Schema::table('shipment', function (Blueprint $table) {
-            $table->string('price');
+            $table->dropColumn('items');
+            $table->dropColumn('waypoint');
         });
     }
 

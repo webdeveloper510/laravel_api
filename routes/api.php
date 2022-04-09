@@ -28,9 +28,9 @@ Route::post('/getToken', [pedidosyaApiController::class, 'getToken']);
 
 Route::post('/CreateShippingOrder', [pedidosyaApiController::class, 'CreateShippingOrder']);
 
-Route::get('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShippingOrderDetails']);
+Route::post('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShippingOrderDetails']);
 
-Route::get('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
+Route::post('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
 
 Route::post('/CreateEstimateShipping', [pedidosyaApiController::class, 'EstimateShippingOrder']);
 
