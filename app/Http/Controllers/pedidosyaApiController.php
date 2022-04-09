@@ -178,7 +178,7 @@ class pedidosyaApiController extends Controller
 //---------------------------Estimate Shipping Order------------------------------------------------    
 
       function EstimateShippingOrder(Request $request){
-        print_r($request->all());die;        
+       // print_r($request->all());die;        
         $url = "https://courier-api.pedidosya.com/v1/estimates/shippings";
 
         $curl = curl_init($url);
