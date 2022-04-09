@@ -10,7 +10,7 @@ class pedidosyaApiController extends Controller
 {
     //-----------------------Client Module--------------------------
 
-     function getToken(){  
+     function getToken(){ 
 
         $url = "https://auth-api.pedidosya.com/v1/token";
 
