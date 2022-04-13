@@ -341,7 +341,7 @@ class pedidosyaApiController extends Controller
 
         function setStatus(Request $request){
 
-          $url = "https://courier-api.pedidosya.com/your-callback-url";
+          $url = "https://courier-api.pedidosya.com/your-callback-urlcreateCallback";
 
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_URL, $url);
