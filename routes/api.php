@@ -38,7 +38,12 @@ Route::post('/EstimateWaypointsCoverage', [pedidosyaApiController::class, 'Estim
 
 Route::post('/estimateShipping', [pedidosyaApiController::class, 'EstimateShipping']);
 
-Route::get('/GetShippingOrders', [adminController::class, 'GetShippingOrders']);
+Route::post('/CancelShippingOrder', [pedidosyaApiController::class, 'PostCancelShipping']);
+
+Route::put('/createCallback', [pedidosyaApiController::class, 'createCallback']);
+
+Route::put('/status', [pedidosyaApiController::class, 'setStatus']);
+
 
 
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
@@ -50,3 +55,5 @@ Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
 Route::post('/FexEstimate', [FexController::class, 'FexCotizer']);
 
 Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
+
+
