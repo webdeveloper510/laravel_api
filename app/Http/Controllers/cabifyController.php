@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 
 class cabifyController extends Controller
 {
+
+// --------------------------------------------Access Token---------------------------------------------
+
     function GetAccessToken(Request $request){
 
         $url = "https://cabify-sandbox.com/auth/api/authorization";
@@ -35,6 +38,7 @@ class cabifyController extends Controller
         return $resp;
     }
 
+// ----------------------------------------Create Delivery-----------------------------------------------
 
   function PostCreateDelivery(Request $request){
     // echo "<pre>";
@@ -67,7 +71,7 @@ class cabifyController extends Controller
    $json_data1['query'] = $request_data['query'];
    $another = array_merge($json_data1,$json_data);
 
-   print_r(json_encode($another));die;
+  //  print_r(json_encode($another));die;
   curl_setopt_array($curl, array(
    CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
    CURLOPT_RETURNTRANSFER => true,
@@ -89,7 +93,7 @@ curl_close($curl);
 echo $response;
 
  }
-
+// ---------------------------------------------Cabify Estimate-----------------------------------------------
  function GetEstimate(){
 
    $curl = curl_init();
@@ -119,6 +123,8 @@ echo $response;
   
 
  }
+
+// ---------------------------------------------CancelDelivery-------------------------------------------
 
  function PostCancelDelivery(){
 

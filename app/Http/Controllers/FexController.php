@@ -85,4 +85,36 @@ class FexController extends Controller
         return $resp;
   
     }
+// ------------------------------------Fex Cancellation-----------------------------------
+
+    function PostFexCancellation(Request $request){
+            // echo "<pre>";
+            // print_r($request->all());die;
+      $url = "https://fex.cl/fex_api/externo/flete/cambiar_estado";
+
+      $curl = curl_init($url);
+      curl_setopt($curl, CURLOPT_URL, $url);
+      curl_setopt($curl, CURLOPT_POST, true);
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+      
+      $headers = array(
+        "Content-Type: application/json",
+     );
+      curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+      
+   $data = array();
+
+      $data['acceso'] =$request->acceso;
+      $data['servicio'] =$request->servicio;
+      $data['estado'] =$request->estado;
+
+      curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+      
+      $resp = curl_exec($curl);
+      curl_close($curl);
+      return $resp;
+
+    }
 }
