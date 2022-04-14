@@ -24,7 +24,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// -------------------------------------Pedidosya Routes------------------------------------------
+// -----------------------------------------Pedidosya Routes------------------------------------------
 
 Route::post('/getToken', [pedidosyaApiController::class, 'getToken']);
 
@@ -53,6 +53,10 @@ Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
 Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
 
 Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
+
+Route::post('/CabifyWebhook', [cabifyController::class, 'Callback']);
+
+//Route::post('/changing_status', [cabifyController::class, 'updateStatus']);
 
 // -----------------------------------------------Fex Routes------------------------------------------
 
