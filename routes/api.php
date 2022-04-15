@@ -2,6 +2,7 @@
 use App\Http\Controllers\pedidosyaApiController;
 use App\Http\Controllers\cabifyController;
 use App\Http\Controllers\FexController;
+use App\Http\Controllers\GoToShop;
 
 use App\Http\Controllers\adminController;
 use Illuminate\Http\Request;
@@ -46,7 +47,7 @@ Route::put('/createCallback', [pedidosyaApiController::class, 'createCallback'])
 
 Route::put('/status', [pedidosyaApiController::class, 'setStatus']);
 
-// ---------------------------------------------Cabify Routes-------------------------------------
+// ---------------------------------------------Cabify Routes----------------------------------------
 
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
 
@@ -65,6 +66,10 @@ Route::post('/FexEstimate', [FexController::class, 'FexCotizer']);
 Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
 
 Route::post('/FexCancellation', [FexController::class, 'PostFexCancellation']);
+
+// -----------------------------------------Gotoshop Route-------------------------------------
+
+Route::post('/Estimate', [GoToShop::class, 'GoToShopEstimate']);
 
 
 
