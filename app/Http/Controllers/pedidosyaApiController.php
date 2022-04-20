@@ -111,7 +111,7 @@ class pedidosyaApiController extends Controller
       $shipment->save();
       $lastInsertedId= $shipment->id;
       $shiiping_id= $data['id'];
-      $affectedRows = $shipment->where("id", $lastInsertedId)->update(["shipping_id" =>$shiiping_id]);
+      $affectedRows = $shipment->where("id", $lastInsertedId)->update(["Shipping" =>$shipping_id]);
       return $resp;
     }
     curl_close($curl);  

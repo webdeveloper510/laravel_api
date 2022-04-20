@@ -71,5 +71,4 @@ Route::post('/FexCancellation', [FexController::class, 'PostFexCancellation']);
 
 Route::post('/Estimate', [GoToShop::class, 'GoToShopEstimate']);
 
-
-
+Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
