@@ -9,13 +9,11 @@ use Illuminate\Http\Request;
 
 class GoToShop extends Controller
 {
-
-  function GoToShopEstimate(Request $request){     
+  function GoToShopEstimate(Request $request){ 
+    //print_r($request->all());die;    
       $estimate['cabify'] =$this->GetEstimate($request->all());         
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
-      echo "<pre>";
-      print_r($estimate);die;
       $key = $this->matchPrice($estimate);
      //echo $key;
       $this->GoToShopCreateShipment($key,$request->all());
@@ -39,44 +37,45 @@ class GoToShop extends Controller
     if($plateform=='fex'){
       $response =  $this->FexSolicitar($postData);
     }
-    echo "<pre>";
-    print_r($response);
     $this->insertAndSave(json_decode($response,true),$plateform,$postData);
   }
 
   function insertAndSave($save,$plateform,$postData){
+    $insert_data=[];
      if($plateform=='padidosya_estimate'){
-         $userId =1;
-         $shipping_id = $save['id'];
-         $refference_id =$save['referenceId'];
-         $deleivery_time =$save['deliveryTime'];
-         $waypoints =$save['waypoints'];
-         $items =$save['items'];
-         $price =$save['price'];
-         $status = "PREORDER";
-         $type ="DROP_OFF";
+      $insert_data['user_id'] =1;
+      $insert_data['shipping_id'] = $save['id'];
+      $insert_data['reference_id'] =$save['referenceId'];
+      $insert_data['delivery_time'] =$save['deliveryTime'];
+      $insert_data['waypoints'] =$save['waypoints'];
+      $insert_data['items'] =$save['items'];
+      $insert_data['price'] =$save['price'];
+      $insert_data['status'] = "PREORDER";
+      $insert_data['type'] ="padidosya";
      }
      if($plateform=='cabify'){
-      $userId =1;
-      $refference_id =$save['data']['createDelivery']['sender']['id'];
-      $deleivery_time =$save['data']['createDelivery']['startAt'];
-      $waypoints =$save['data']['createDelivery']['deliveryPoints'];
-      $items =$postData['items'];
-      $id =$save['data']['createDelivery']['id'];
-      $price =12;
-      $status = "PREORDER";
-      $type = "DROP_OFF";
+      echo "<pre>";
+      print_r($postData);die;
+      $insert_data['user_id'] =1;
+      $insert_data['reference_id'] =$save['data']['createDelivery']['sender']['id'];
+      $insert_data['delivery_time']=$save['data']['createDelivery']['startAt'];
+      $insert_data['waypoints']=$save['data']['createDelivery']['deliveryPoints'];
+      $insert_data['items'] =$postData['items'];
+      $insert_data['shipping_id']=$save['data']['createDelivery']['id'];
+      $insert_data['price']=12;
+      $insert_data['status'] = "PREORDER";
+      $insert_data['type'] = "cabify";
   }
   if($plateform=='fex'){
-    $userId =1;
-    $refference =$postData['referenceId'];
-    $deleivery_time =$save['deliveryTime'];
-    $waypoints =$save ['dir_destino'];
-    $items = $postData['items'];
-   // $id =$save['id'];
-    $price =1355;
-    $status = "PREORDER";
-    $type = "DROP_OFF";
+    $insert_data['user_id'] =1;
+    $insert_data['reference_id'] ='fex refference';
+    $insert_data['delivery_time']=$postData['deliveryTime'];
+    $insert_data['waypoints']=$postData['waypoints'];
+    $insert_data['items'] =$postData['items'];
+    $insert_data['shipping_id']=$save['resultado']['servicio'];
+    $insert_data['price']=$save['resultado']['total'];
+    $insert_data['status'] = "PREORDER";
+    $insert_data['type'] = "cabify";
 }
 
   }
@@ -244,6 +243,7 @@ class GoToShop extends Controller
          $resp = curl_exec($curl);
          curl_close($curl);
           $data = json_decode($resp,true);
+          //print_r($data);die;
           return $data['price']['total'];
        }
 // -------------------------------------------Cabify Estimate-----------------------------------------------
@@ -283,7 +283,6 @@ class GoToShop extends Controller
         
         $response = curl_exec($curl);
         $response = json_decode($response,true);
-      //  print_r($response);die;
         curl_close($curl);
        // return  $response;
         return $response['data']['estimates'][0]['total']['amount'];
@@ -420,10 +419,7 @@ class GoToShop extends Controller
     
   // --------------------------------------------Cabify Shipping---------------------------------------------
 
-    
   function PostCreateDelivery($shipping){
-    // echo "<pre>";
-    // print_r($shipping);die;
      $data = $shipping['waypoints'];
      $curl = curl_init();
     $request_data = array(
@@ -435,6 +431,9 @@ class GoToShop extends Controller
       
     ),
   );
+  $variable['optimize'] =true;
+  $variable['senderId'] ='c432e92c224370bccf5715eae53ff94a';
+  $variable['productId'] ='db10033ac9b52ac4e1d785107f3e96aa';
   // echo "<pre>";
   // print_r($data);die;
   for($i=0;$i<count($data);$i++)
@@ -448,21 +447,24 @@ class GoToShop extends Controller
     'mobileNum'=>666998877,
     'name'=>'John'
   );
-  $data1['deliveryPoints'][$i]['name'] = $data[$i]['name'];
-  $data1['deliveryPoints'][$i]['instr'] =$data[$i]['instructions'];
-  $data1['deliveryPoints'][$i]['addr'] = $data[$i]['addressStreet'];
-  $data1['deliveryPoints'][$i]['city'] =$data[$i]['city'];
-  $data1['deliveryPoints'][$i]['country'] = 'England';
-  $data1['deliveryPoints'][$i]['loc'] = $location;
-  $data1['deliveryPoints'][$i]['receiver'] = $receiver;
+  $data1[$i]['name'] = $data[$i]['name'];
+  $data1[$i]['instr'] =$data[$i]['instructions'];
+  $data1[$i]['addr'] = $data[$i]['addressStreet'];
+  $data1[$i]['city'] =$data[$i]['city'];
+  $data1[$i]['country'] = 'England';
+  $data1[$i]['loc'] = $location;
+  $data1[$i]['receiver'] = $receiver;
 }    
 
-
-   $json_data['variables'] = array_merge($request_data['variables'],$data1);
-    
+   $deleivery_points = json_encode($data1);
+   //print_r($deleivery_points);die;
+   $json_data = array_merge($request_data['variables'],$data1);
+    $variables1 = json_encode($json_data);
    $json_data1['query'] = $request_data['query'];
    $another = array_merge($json_data1,$json_data);
    $shiping = json_encode($another);
+  //    echo "<pre>";
+  // print_r($variables1);die;
   curl_setopt_array($curl, array(
    CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
    CURLOPT_RETURNTRANSFER => true,
@@ -472,18 +474,17 @@ class GoToShop extends Controller
    CURLOPT_FOLLOWLOCATION => true,
    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
    CURLOPT_CUSTOMREQUEST => 'POST',
-   CURLOPT_POSTFIELDS =>"'".$shiping."'",
+   CURLOPT_POSTFIELDS =>'{"query":"mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}",
+   "variables":{"optimize":true,"senderId":"280e5faa46f711ecacc0cad412eb504e","productId":"db10033ac9b52ac4e1d785107f3e96aa","deliveryPoints":'.$deleivery_points.'}}',
    CURLOPT_HTTPHEADER => array(
-     'Authorization: Bearer DB8owffggCXyJiSc8Rvll7_r909BkR',
+     'Authorization: Bearer 2Pauxez_tZEKJ69atctLUTKZHBrSgT',
      'Content-Type: application/json'
    ),
  ));
 
 $response = curl_exec($curl);
 curl_close($curl);
-return $response;
-
-    
+return $response;    
 
  }
 
@@ -517,6 +518,7 @@ $data['dir_destino'] =$shipping['waypoints'][1]['addressStreet'];
 $data['des_carga'] =$shipping['items'][0]['description'];
 $data['rec_nom'] =$shipping['waypoints']['rec_nom'];
 $data['rec_tel'] =$shipping['waypoints']['dir_destino'];
+$data['programado'] =$shipping['deliveryTime'];
 $data['vehiculo'] =2;
 $data['reg_origen'] =0;
 
