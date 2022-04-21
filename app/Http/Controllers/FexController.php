@@ -48,6 +48,8 @@ class FexController extends Controller
 
     function  FexSolicitar(Request $request){
 
+     // print_r($request->all());die;
+
         $url = "https://fex.cl/fex_api/externo/flete/solicitar";
 
         $curl = curl_init($url);
@@ -56,7 +58,7 @@ class FexController extends Controller
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         
         $headers = array(
-          "Content-Type: application/json",
+          "Content-Type: application/json"
        );
         curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         
@@ -71,10 +73,12 @@ class FexController extends Controller
     $data['dir_destino'] =$request->dir_destino;
     $data['des_carga'] =$request->des_carga;
     $data['rec_nom'] =$request->rec_nom;
-    $data['rec_tel'] =$request->dir_destino;
+    $data['rec_tel'] =$request->rec_tel;
     $data['vehiculo'] =$request->vehiculo;
+    $data['programado'] =$request->programado;
     $data['reg_origen'] =$request->reg_origen;
     $data['extra'] =$request->extra;
+
     
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Authentication;
+use App\Models\shipmentModel;
 
 
 use Illuminate\Http\Request;
@@ -9,16 +10,18 @@ use Illuminate\Http\Request;
 class GoToShop extends Controller
 {
 
-    function GoToShopEstimate(Request $request){     
-      
+  function GoToShopEstimate(Request $request){     
       $estimate['cabify'] =$this->GetEstimate($request->all());         
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
+      echo "<pre>";
+      print_r($estimate);die;
       $key = $this->matchPrice($estimate);
+     //echo $key;
       $this->GoToShopCreateShipment($key,$request->all());
   }
 
-  /**--------------------------------------------Get minimum Price Api Provider-------------------------------------------- */
+  /*--------------------------------------------Get minimum Price Api Provider-------------------------------------------- */
 
   function matchPrice($estimate){
     $value = min($estimate);
@@ -27,15 +30,55 @@ class GoToShop extends Controller
   }
 /*-----------------------------------------------------Create Shipment-------------------------------------------------*/
   function GoToShopCreateShipment($plateform,$postData){
-    if($plateform=='fex'){
-      $this->CreateShippingOrder($postData);
-    }
     if($plateform=='padidosya_estimate'){
-      $this->CreateShippingOrder($postData);
+      $response = $this->CreateShippingOrder($postData);
+    }
+    if($plateform=='cabify'){
+      $response = $this->PostCreateDelivery($postData);
     }
     if($plateform=='fex'){
-      $this->CreateShippingOrder($postData);
+      $response =  $this->FexSolicitar($postData);
     }
+    echo "<pre>";
+    print_r($response);
+    $this->insertAndSave(json_decode($response,true),$plateform,$postData);
+  }
+
+  function insertAndSave($save,$plateform,$postData){
+     if($plateform=='padidosya_estimate'){
+         $userId =1;
+         $shipping_id = $save['id'];
+         $refference_id =$save['referenceId'];
+         $deleivery_time =$save['deliveryTime'];
+         $waypoints =$save['waypoints'];
+         $items =$save['items'];
+         $price =$save['price'];
+         $status = "PREORDER";
+         $type ="DROP_OFF";
+     }
+     if($plateform=='cabify'){
+      $userId =1;
+      $refference_id =$save['data']['createDelivery']['sender']['id'];
+      $deleivery_time =$save['data']['createDelivery']['startAt'];
+      $waypoints =$save['data']['createDelivery']['deliveryPoints'];
+      $items =$postData['items'];
+      $id =$save['data']['createDelivery']['id'];
+      $price =12;
+      $status = "PREORDER";
+      $type = "DROP_OFF";
+  }
+  if($plateform=='fex'){
+    $userId =1;
+    $refference =$postData['referenceId'];
+    $deleivery_time =$save['deliveryTime'];
+    $waypoints =$save ['dir_destino'];
+    $items = $postData['items'];
+   // $id =$save['id'];
+    $price =1355;
+    $status = "PREORDER";
+    $type = "DROP_OFF";
+}
+
   }
     function GoToShopAuthentication(Request $request){
       switch ($request->type) {
@@ -213,7 +256,7 @@ class GoToShop extends Controller
         $variable=array(
           'requesterId'=>'280e5faa46f711ecacc0cad412eb504e',
           'startType'=>'ASAP',
-           'startAt'=>$postData['deliveryTime'],
+           'startAt'=>'2020-08-01 08:00:00',
            "stops"=>[
             ["loc"=> [$postData['waypoints'][0]['latitude'] , $postData['waypoints'][0]['longitude'] ] ],
             [ "loc"=> [ $postData['waypoints'][1]['latitude'], $postData['waypoints'][1]['longitude'] ] ]
@@ -240,8 +283,10 @@ class GoToShop extends Controller
         
         $response = curl_exec($curl);
         $response = json_decode($response,true);
+      //  print_r($response);die;
         curl_close($curl);
-        return $response['data']['estimates']['total']['amount'];
+       // return  $response;
+        return $response['data']['estimates'][0]['total']['amount'];
      
       }
 
@@ -274,7 +319,7 @@ class GoToShop extends Controller
       curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
       
       $data = array();
-    $data['acceso'] ="280e5faa46f711ecacc0cad412eb504e";
+    $data['acceso'] ="DEB454D-A086639-8CD60D0-77C";
     $data['ori_lat'] =$request['waypoints'][0]['latitude'];
     $data['ori_lng'] =$request['waypoints'][0]['longitude'];;
     $data['des_lat'] =$request['waypoints'][1]['latitude'];
@@ -286,10 +331,12 @@ class GoToShop extends Controller
       curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       
-      $resp = curl_exec($curl);
+      $resp = curl_exec($curl); 
       $response = json_decode($resp,true);
+     // print_r($response);
+//return $resp;
       curl_close($curl);
-     return $response['result']['full'];
+     return $response['resultado']['total'];
 
     }
 
@@ -348,25 +395,24 @@ class GoToShop extends Controller
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
   
     $resp = curl_exec($curl);
-    $data = json_decode($resp, true);
-    // echo "<pre>";
-    // print_r ($data); die;
-    if($data['id']){      
-      $shipment = new shipmentModel;
-      $shipment->user_id = "text";
-      $shipment->reference_id = $data['referenceId'];
-      $shipment->items = json_encode($data['items']);
-      $shipment->waypoints =json_encode($data['waypoints']);
-      $shipment->delivery_time = $data['deliveryTime'];
-      $shipment->price = json_encode($data['price']);
-      $shipment->status = $data['status'];
-      $shipment->shipping_type = 'pedidosya';
-      $shipment->save();
-      $lastInsertedId= $shipment->id;
-      $shiiping_id= $data['id'];
-      $affectedRows = $shipment->where("id", $lastInsertedId)->update(["Shipping" =>$shipping_id]);
-      return $resp;
-    }
+   // $data = json_decode($resp, true);
+    // if($data['id']){      
+    //   $shipment = new shipmentModel;
+    //   $shipment->user_id = "text";
+    //   $shipment->reference_id = $data['referenceId'];
+    //   $shipment->items = json_encode($data['items']);
+    //   $shipment->waypoints =json_encode($data['waypoints']);
+    //   $shipment->delivery_time = $data['deliveryTime'];
+    //   $shipment->price = json_encode($data['price']);
+    //   $shipment->status = $data['status'];
+    //   $shipment->shipping_type = 'pedidosya';
+    //   $shipment->save();
+    //   $lastInsertedId= $shipment->id;
+    //   $shiiping_id= $data['id'];
+    //   $affectedRows = $shipment->where("id", $lastInsertedId)->update(["Shipping" =>$shipping_id]);
+    //   return $resp;
+    // }
+    return $resp;
     curl_close($curl);  
 
   }   
@@ -377,15 +423,15 @@ class GoToShop extends Controller
     
   function PostCreateDelivery($shipping){
     // echo "<pre>";
-    // print_r($request->all());die;
-     $data = $shipping['variables']['deliveryPoints'];
+    // print_r($shipping);die;
+     $data = $shipping['waypoints'];
      $curl = curl_init();
     $request_data = array(
     'query' => 'mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}',
     'variables' => array(
       'optimize' => true,
-      'senderId'=>$shipping['variables']['senderId'],
-      'productId'=>$shipping['variables']['productId']
+      'senderId'=>'c432e92c224370bccf5715eae53ff94a',
+      'productId'=>'db10033ac9b52ac4e1d785107f3e96aa'
       
     ),
   );
@@ -393,20 +439,30 @@ class GoToShop extends Controller
   // print_r($data);die;
   for($i=0;$i<count($data);$i++)
 {
+  $location = array();
+  $location[] = $data[$i]['latitude'];
+  $location[] = $data[$i]['longitude'];
+  //$location[]=$data[$i]['latitude'].','.$data[$i]['longitude'];
+  $receiver = array(
+    'mobileCc'=>34,
+    'mobileNum'=>666998877,
+    'name'=>'John'
+  );
   $data1['deliveryPoints'][$i]['name'] = $data[$i]['name'];
-  $data1['deliveryPoints'][$i]['instr'] =$data[$i]['instr'];
-  $data1['deliveryPoints'][$i]['addr'] = $data[$i]['addr'];
+  $data1['deliveryPoints'][$i]['instr'] =$data[$i]['instructions'];
+  $data1['deliveryPoints'][$i]['addr'] = $data[$i]['addressStreet'];
   $data1['deliveryPoints'][$i]['city'] =$data[$i]['city'];
-  $data1['deliveryPoints'][$i]['country'] = $data[$i]['country'];
-  $data1['deliveryPoints'][$i]['loc'] = $data[$i]['loc'];
-  $data1['deliveryPoints'][$i]['receiver'] = $data[$i]['receiver'];
+  $data1['deliveryPoints'][$i]['country'] = 'England';
+  $data1['deliveryPoints'][$i]['loc'] = $location;
+  $data1['deliveryPoints'][$i]['receiver'] = $receiver;
 }    
-   
+
+
    $json_data['variables'] = array_merge($request_data['variables'],$data1);
+    
    $json_data1['query'] = $request_data['query'];
    $another = array_merge($json_data1,$json_data);
-
-  //  print_r(json_encode($another));die;
+   $shiping = json_encode($another);
   curl_setopt_array($curl, array(
    CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
    CURLOPT_RETURNTRANSFER => true,
@@ -416,7 +472,7 @@ class GoToShop extends Controller
    CURLOPT_FOLLOWLOCATION => true,
    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
    CURLOPT_CUSTOMREQUEST => 'POST',
-   CURLOPT_POSTFIELDS =>json_encode($another),
+   CURLOPT_POSTFIELDS =>"'".$shiping."'",
    CURLOPT_HTTPHEADER => array(
      'Authorization: Bearer DB8owffggCXyJiSc8Rvll7_r909BkR',
      'Content-Type: application/json'
@@ -425,7 +481,9 @@ class GoToShop extends Controller
 
 $response = curl_exec($curl);
 curl_close($curl);
-echo $response;
+return $response;
+
+    
 
  }
 
