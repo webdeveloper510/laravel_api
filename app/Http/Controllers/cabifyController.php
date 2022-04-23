@@ -65,6 +65,38 @@ class cabifyController extends Controller
     return $response;
 
  }
+
+//  -------------------------------------------------Create Journey-------------------------------------------
+
+function CreateJourney(){
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'POST',
+  CURLOPT_POSTFIELDS =>'{"query":"mutation createJourney ($bookingInput: BookingInput) {\\r\\n    createJourney (bookingInput: $bookingInput) {\\r\\n        id\\r\\n    }\\r\\n}",
+  "variables":{"bookingInput":{"requesterId":"280e5faa46f711ecacc0cad412eb504e","stops":[{"loc":[40.4315553,-3.7018335],"addr":"Calle de los poetas 12,
+   Madrid"},{"loc":[40.4244385,-3.6884232],"addr":"Avenida de Circo 2, Madrid"}],"startAt":null,"productId":"280e5faa46f711ecacc0cad412eb504e","message":"Test from Cabify Dev Team","rider":{"id":"01234567890123456789012345678901"}}}}',
+  CURLOPT_HTTPHEADER => array(
+    'Authorization: Bearer 4YOa0F26QRUPND_Lsqf2J4mcv37ICl',
+    'Content-Type: application/json'
+  ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
+
+    }
+
 // ---------------------------------------------Cabify Estimate-----------------------------------------------
  function GetEstimate(){
 
@@ -134,7 +166,7 @@ echo $response;
 
 }
 
-// ------------------------------------Cabify Webhook-----------------------------------------
+// ------------------------------------------------Cabify Webhook------------------------------------------------
 
         function Callback(Request $request){
             // echo "<pre>";

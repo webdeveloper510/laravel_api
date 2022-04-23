@@ -97,8 +97,8 @@ class pedidosyaApiController extends Controller
   
     $resp = curl_exec($curl);
     $data = json_decode($resp, true);
-    // echo "<pre>";
-    // print_r ($data); die;
+    echo "<pre>";
+    print_r ($data); die;
     if($data['id']){      
       $shipment = new shipmentModel;
       $shipment->user_id = "text";
@@ -214,6 +214,7 @@ class pedidosyaApiController extends Controller
 
         for($i=0;$i<count($request->waypoints);$i++){
           $data['waypoints'][$i]['type'] = $request['waypoints'][$i]['type'];
+
           $data['waypoints'][$i]['addressStreet'] = $request['waypoints'][$i]['addressStreet'];
           $data['waypoints'][$i]['addressAdditional'] = $request['waypoints'][$i]['addressAdditional'];
           $data['waypoints'][$i]['city'] = $request['waypoints'][$i]['city'];
@@ -254,11 +255,12 @@ class pedidosyaApiController extends Controller
       $data=array();      
       for($i=0;$i<count($request->waypoints);$i++){
         $data['waypoints'][$i]['addressStreet'] = $request['waypoints'][$i]['addressStreet'];
+        
         $data['waypoints'][$i]['city'] = $request['waypoints'][$i]['city'];
         $data['waypoints'][$i]['latitude'] = $request['waypoints'][$i]['latitude'];
         $data['waypoints'][$i]['longitude'] = $request['waypoints'][$i]['longitude'];
       }
-      curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+      curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));   
       curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       
@@ -316,7 +318,7 @@ class pedidosyaApiController extends Controller
 
           );
           curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-          for($i=0; $i<count($request['callbacks']);$i++){
+          for($i=0; $i<count($request->callbacks);$i++){
             $data['callbacks'][$i]['url'] = $request['callbacks'][$i]['url'];
             $data['callbacks'][$i]['authorizationKey'] = $request['callbacks'][$i]['authorizationKey'];
             $data['callbacks'][$i]['topic'] = $request['callbacks'][$i]['topic'];

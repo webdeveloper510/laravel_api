@@ -23,7 +23,7 @@ class GoToShop extends Controller
 
   function matchPrice($estimate){
     $value = min($estimate);
-    $key = array_search($value, $estimate);
+    $key = array_search($value, $estimate);  
     return $key;
   }
 /*-----------------------------------------------------Create Shipment-------------------------------------------------*/
@@ -90,17 +90,7 @@ class GoToShop extends Controller
        default:
           return json_encode('Invalid Type');
         }
-        /* function GoToShopShipping(Request $request){
-          switch ($request->type) {
-            case "cabify":
-              $this->GetAccessToken($request->all());
-              break;
-            case "Pedidosya":
-              $this->getToken($request->all());
-              break;
-           default:
-              return json_encode('Invalid Type');
-            }*/
+            
     }
 // --------------------------------------Padidosya Authentication---------------------------------------
 
@@ -530,6 +520,96 @@ $data['reg_origen'] =0;
   $resp = curl_exec($curl);
   curl_close($curl);
   return $resp;
+
+}
+
+// -------------------------------------------Padidosya Cancellation----------------------------------------------
+
+function PostCancelShipping(Request $request){
+
+  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
+
+$curl = curl_init($url);
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+// problem:-some database isshue!!!--------------------------
+$headers = array(
+   "Content-Type: application/json",
+   "Authorization:".$request->token
+);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$data = array();
+$data['reasonText'] = $request->reasonText;
+
+curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+$resp = curl_exec($curl);
+curl_close($curl);
+return $resp;
+
+}
+// ----------------------------------------------Cabify Cencellation---------------------------------------------
+
+function PostCancelDelivery(){
+
+  $curl = curl_init();
+    //  Delivery will be canceled only when we have journeyId..?------------------
+  curl_setopt_array($curl, array(
+   CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
+   CURLOPT_RETURNTRANSFER => true,
+   CURLOPT_ENCODING => '',
+   CURLOPT_MAXREDIRS => 10,
+   CURLOPT_TIMEOUT => 0,
+   CURLOPT_FOLLOWLOCATION => true,
+   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+   CURLOPT_CUSTOMREQUEST => 'POST',
+   CURLOPT_POSTFIELDS =>'{"query":"mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}",
+   "variables":{"optimize":true,"senderId":"c432e92c224370bccf5715eae53ff94a","productId":"db10033ac9b52ac4e1d785107f3e96aa","deliveryPoints":[{"name":"PickUp point","instr":"https://url.example","addr":"Calle de Évora","num":"1","city":"Madrid","country":"Spain","loc":[40.3865045,-3.718262699999999],"receiver":{"mobileCc":"34","mobileNum":"666778899","name":"John Doe"}},{"name":"Destination point","addr":"Calle de Évora","num":"1","city":"Madrid","country":"Spain","loc":[40.3865045,-3.718262699999999],"receiver":{"mobileCc":"34","mobileNum":"666998877","name":"Jane Doe"}}]}}',
+   CURLOPT_HTTPHEADER => array(
+     'Authorization: Bearer Nv91W2HwY-w6xRtYodzCuOh7nolfKa',
+     'Content-Type: application/json'
+   ),
+ ));
+
+$response = curl_exec($curl);
+curl_close($curl);
+echo $response;
+
+}
+
+// ------------------------------------------------Fex Cencellation----------------------------------------------
+
+function PostFexCancellation(Request $request){
+ 
+$url = "https://fex.cl/fex_api/externo/flete/cambiar_estado";
+
+$curl = curl_init($url);
+curl_setopt($curl, CURLOPT_URL, $url);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+$headers = array(
+"Content-Type: application/json",
+);
+curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+$data = array();
+
+$data['acceso'] =$request->acceso;
+$data['servicio'] =$request->servicio;
+$data['estado'] =$request->estado;
+
+curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+$resp = curl_exec($curl);
+curl_close($curl);
+return $resp;
 
 }
 
