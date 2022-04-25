@@ -19,14 +19,14 @@ class GoToShop extends Controller
       $this->GoToShopCreateShipment($key,$request->all());
   }
 
-  /*--------------------------------------------Get minimum Price Api Provider-------------------------------------------- */
+  /*--------------------------------------------Get minimum Price Api Provider-------------------------------- */
 
   function matchPrice($estimate){
     $value = min($estimate);
     $key = array_search($value, $estimate);  
     return $key;
   }
-/*-----------------------------------------------------Create Shipment-------------------------------------------------*/
+/*-----------------------------------------------------Create Shipment----------------------------------------*/
   function GoToShopCreateShipment($plateform,$postData){
     if($plateform=='padidosya_estimate'){
       $response = $this->CreateShippingOrder($postData);
@@ -79,6 +79,9 @@ class GoToShop extends Controller
 }
 
   }
+
+  //---------------------------------------------GoToShopAuthentication----------------------------------------- 
+
     function GoToShopAuthentication(Request $request){
       switch ($request->type) {
         case "cabify":

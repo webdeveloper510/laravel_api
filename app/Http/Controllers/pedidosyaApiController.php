@@ -314,8 +314,7 @@ class pedidosyaApiController extends Controller
           
           $headers = array(
              "Content-Type: application/json",
-             "Authorization:1763-122337-a645d170-da19-4fbc-7b9a-6effbdedd376"
-
+             "Authorization:".$request->token
           );
           curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
           for($i=0; $i<count($request->callbacks);$i++){
@@ -343,7 +342,7 @@ class pedidosyaApiController extends Controller
 
         function setStatus(Request $request){
 
-          $url = "https://courier-api.pedidosya.com/your-callback-urlcreateCallback";
+          $url = "https://courier-api.pedidosya.com/http://127.0.0.1:8000/api/setStatus";
 
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_URL, $url);
