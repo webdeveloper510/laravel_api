@@ -9,14 +9,14 @@ use Illuminate\Http\Request;
 
 class GoToShop extends Controller
 {
-  function GoToShopEstimate(Request $request){ 
+  function GoToShopShipping(Request $request){ 
     //print_r($request->all());die;    
       $estimate['cabify'] =$this->GetEstimate($request->all());         
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
-      $key = $this->matchPrice($estimate);
+      $key = $this->matchPrice($estimate['price']);
      //echo $key;
-      $this->GoToShopCreateShipment($key,$request->all());
+      $this->GoToShopCreateShipment($key,$request->all(),$estimate['result']);
   }
 
   /*--------------------------------------------Get minimum Price Api Provider-------------------------------- */
@@ -27,16 +27,17 @@ class GoToShop extends Controller
     return $key;
   }
 /*-----------------------------------------------------Create Shipment----------------------------------------*/
-  function GoToShopCreateShipment($plateform,$postData){
+  function GoToShopCreateShipment($plateform,$postData,$result){
     if($plateform=='padidosya_estimate'){
       $response = $this->CreateShippingOrder($postData);
     }
     if($plateform=='cabify'){
-      $response = $this->PostCreateDelivery($postData);
+      $response = $this->PostCreateDelivery($postData,$result);
     }
     if($plateform=='fex'){
       $response =  $this->FexSolicitar($postData);
     }
+
     $this->insertAndSave(json_decode($response,true),$plateform,$postData);
   }
 
@@ -54,8 +55,6 @@ class GoToShop extends Controller
       $insert_data['type'] ="padidosya";
      }
      if($plateform=='cabify'){
-      echo "<pre>";
-      print_r($postData);die;
       $insert_data['user_id'] =1;
       $insert_data['reference_id'] =$save['data']['createDelivery']['sender']['id'];
       $insert_data['delivery_time']=$save['data']['createDelivery']['startAt'];
@@ -82,17 +81,10 @@ class GoToShop extends Controller
 
   //---------------------------------------------GoToShopAuthentication----------------------------------------- 
 
-    function GoToShopAuthentication(Request $request){
-      switch ($request->type) {
-        case "cabify":
+    function GoToShopAuthentication(Request $request){   
           $this->GetAccessToken($request->all());
-          break;
-        case "Pedidosya":
           $this->getToken($request->all());
-          break;
-       default:
-          return json_encode('Invalid Type');
-        }
+
             
     }
 // --------------------------------------Padidosya Authentication---------------------------------------
@@ -107,8 +99,7 @@ class GoToShop extends Controller
     $headers = array(
        "Content-Type: application/json",
     );
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);    
    $data = array();
     $data['client_id'] = $token['client_id'];
     $data['client_secret'] = $token['client_secret'];
@@ -120,7 +111,7 @@ class GoToShop extends Controller
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);    
     $resp = curl_exec($curl);
     $response = json_decode($resp,true);
-    if($response){
+    if($response['access_token']){
       $store = new Authentication;
       $store->client_id = $token['client_id'];
       $store->client_secret = $token['client_secret'];
@@ -129,10 +120,7 @@ class GoToShop extends Controller
       $store->username = $token['username'];
       $store->type = $token['type'];
       $store->token = $response['access_token'];
-      $store->save();
-     // $lastInsertedId= $store->id;
-     // $affectedRows = $store->where("id", $lastInsertedId)->update(["token" =>$response['access_token']]);
-    
+      $store->save();    
     }
     curl_close($curl);
     return $response;
@@ -165,7 +153,7 @@ class GoToShop extends Controller
   curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);  
   $resp = curl_exec($curl);
   $response = json_decode($resp,true);
-  if($response){
+  if($response['access_token']){
     $store = new Authentication;
     $store->client_id = $token['client_id'];
     $store->client_secret = $token['client_secret'];
@@ -175,10 +163,11 @@ class GoToShop extends Controller
     $store->type = $token['type'];
     $store->token = $response['access_token'];
     $store->save();
-    //$lastInsertedId= $store->id;
-    //$affectedRows = $store->where("id", $lastInsertedId)->update(["token" =>$response['access_token']]);
+    $auth_response['access_token'] = $response['access_token'];
+    return json_encode($auth_response);
   }
   curl_close($curl);
+
   return $response;
 }
 
@@ -237,7 +226,7 @@ class GoToShop extends Controller
          curl_close($curl);
           $data = json_decode($resp,true);
           //print_r($data);die;
-          return $data['price']['total'];
+          return ['price'=>$data['price']['total'],'result'=>$data];
        }
 // -------------------------------------------Cabify Estimate-----------------------------------------------
 
@@ -278,27 +267,15 @@ class GoToShop extends Controller
         $response = json_decode($response,true);
         curl_close($curl);
        // return  $response;
-        return $response['data']['estimates'][0]['total']['amount'];
+        return ['price'=>$response['data']['estimates'][0]['total']['amount'],'result'=>$response];
      
       }
 
 // --------------------------------------------Fex Estimate-------------------------------------
       
-    function FexCotizer($request){
-
-      // switch ($request->weight) {
-      //   case $request->weight > 10:
-      //     $vehicle = 'two';
-      //     break;
-      //   case "Pedidosya":
-      //     $this->getToken($request->all());
-      //     break;
-      //  default:
-      //     return json_encode('Invalid Type');
-      //   }
-       // print_r($request);die;
+    function FexCotizer($request){;
       
-        $url = "https://fex.cl/fex_api/externo/flete/cotizar";
+      $url = "https://fex.cl/fex_api/externo/flete/cotizar";
 
       $curl = curl_init($url);
       curl_setopt($curl, CURLOPT_URL, $url);
@@ -328,7 +305,7 @@ class GoToShop extends Controller
      // print_r($response);
 //return $resp;
       curl_close($curl);
-     return $response['resultado']['total'];
+     return ['price'=>$response['resultado']['total'],'result'=>$response];
 
     }
 
@@ -379,31 +356,12 @@ class GoToShop extends Controller
       $data['waypoints'][$i]['name'] = $shipping['waypoints'][$i]['name'];
       $data['waypoints'][$i]['instructions'] = $shipping['waypoints'][$i]['instructions'];
       $data['waypoints'][$i]['order'] = $shipping['waypoints'][$i]['order'];
-
     }
     
     curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));   
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-  
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);  
     $resp = curl_exec($curl);
-   // $data = json_decode($resp, true);
-    // if($data['id']){      
-    //   $shipment = new shipmentModel;
-    //   $shipment->user_id = "text";
-    //   $shipment->reference_id = $data['referenceId'];
-    //   $shipment->items = json_encode($data['items']);
-    //   $shipment->waypoints =json_encode($data['waypoints']);
-    //   $shipment->delivery_time = $data['deliveryTime'];
-    //   $shipment->price = json_encode($data['price']);
-    //   $shipment->status = $data['status'];
-    //   $shipment->shipping_type = 'pedidosya';
-    //   $shipment->save();
-    //   $lastInsertedId= $shipment->id;
-    //   $shiiping_id= $data['id'];
-    //   $affectedRows = $shipment->where("id", $lastInsertedId)->update(["Shipping" =>$shipping_id]);
-    //   return $resp;
-    // }
     return $resp;
     curl_close($curl);  
 
@@ -412,7 +370,7 @@ class GoToShop extends Controller
     
   // --------------------------------------------Cabify Shipping---------------------------------------------
 
-  function PostCreateDelivery($shipping){
+  function PostCreateDelivery($shipping,$result){
      $data = $shipping['waypoints'];
      $curl = curl_init();
     $request_data = array(
@@ -448,16 +406,12 @@ class GoToShop extends Controller
   $data1[$i]['loc'] = $location;
   $data1[$i]['receiver'] = $receiver;
 }    
-
    $deleivery_points = json_encode($data1);
-   //print_r($deleivery_points);die;
    $json_data = array_merge($request_data['variables'],$data1);
     $variables1 = json_encode($json_data);
    $json_data1['query'] = $request_data['query'];
    $another = array_merge($json_data1,$json_data);
    $shiping = json_encode($another);
-  //    echo "<pre>";
-  // print_r($variables1);die;
   curl_setopt_array($curl, array(
    CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
    CURLOPT_RETURNTRANSFER => true,
@@ -474,14 +428,89 @@ class GoToShop extends Controller
      'Content-Type: application/json'
    ),
  ));
-
 $response = curl_exec($curl);
 curl_close($curl);
-return $response;    
+return $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result);
+//return $response;    
 
  }
 
+function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate){
+  $setResponse=array();
+   $response = json_decode($response,true);
+   if($provider=='cabify' && $response['data']['createDelivery']['id']){
+    $setResponse['id']=$response['data']['createDelivery']['id'];
+    $setResponse['status']='PREORDER';
+    $setResponse['cancelCode']='';
+    $setResponse['cancelReason']='';
+    $setResponse['referenceId']=$shipping['referenceId'];
+    $setResponse['isTest']=$shipping['isTest'];
+    $setResponse['deliveryTime']=$response['data']['createDelivery']['startAt'];
+    $setResponse['lastUpdated']='';
+    $setResponse['createdAt']='';
+    $setResponse['expiresAt']=$response['data']['createDelivery']['id'];
+    $setResponse['items']=$shipping['items'];
+    $setResponse['volume']=$shipping['volume'];
+    $setResponse['weight']=$shipping['weight'];
+    $setResponse['price']=array(
+      'distance'=>$estimate['data']['estimates']['distance'],
+      'subtotal'=>$estimate['data']['estimates'][0]['total']['amount'],
+      'taxes'=>5,
+      'total'=>$estimate['data']['estimates'][0]['total']['amount'],
+      'currency'=>$estimate['data']['estimates'][0]['total']['currency']
+    );
+    $setResponse['shareLocationUrl']='https://envios.pedidosya.com.uy/tracking/ODYzMjAxMTAyMTMwOTM0Njk0Njg3NCNBUEkjODYz';
+    $setResponse['proofOfDelivery']=true;
+    $setResponse['notificationMail']=$shipping['notificationMail'];
+    $setResponse['onlineSupportUrl']='https://someOnlineSupportUrl.com';
+    for($i=0;$i<count($response['data']['createDelivery']['deliveryPoints']);$i++){
+      $waypoints = $response['data']['createDelivery']['deliveryPoints'];
+      $setResponse['waypoints'][$i]['type'] = $waypoints[$i]['name'];
+      $setResponse['waypoints'][$i]['addressStreet'] = $waypoints[$i]['addr'];
+      $setResponse['waypoints'][$i]['addressAdditional'] = $waypoints[$i]['addr'];
+      $setResponse['waypoints'][$i]['city'] = $waypoints[$i]['city'];
+      $setResponse['waypoints'][$i]['latitude'] = $waypoints[$i]['loc'][0];
+      $setResponse['waypoints'][$i]['longitude'] = $waypoints[$i]['loc'][1];
+      $setResponse['waypoints'][$i]['phone'] =$shipping['waypoints'][$i]['phone'] ;
+      $setResponse['waypoints'][$i]['name'] =$shipping['waypoints'][$i]['name'];
+      $setResponse['waypoints'][$i]['instructions'] = $shipping['waypoints'][$i]['instructions'];
+      $setResponse['waypoints'][$i]['order'] = $shipping['waypoints'][$i]['order'];
+    }
+    return json_encode($setResponse); 
+   }
 
+   if($provider=='fex' && $response['estatus']==1){
+    $setResponse['id']=$response['resultado']['servicio'];
+    $setResponse['status']='PREORDER';
+    $setResponse['cancelCode']='';
+    $setResponse['cancelReason']='';
+    $setResponse['referenceId']=$shipping['referenceId'];
+    $setResponse['isTest']=$shipping['isTest'];
+    $setResponse['deliveryTime']=$shipping['deliveryTime'];
+    $setResponse['lastUpdated']='';
+    $setResponse['createdAt']='';
+    $setResponse['expiresAt']='';
+    $setResponse['items']=$shipping['items'];
+    $setResponse['volume']=$shipping['volume'];
+    $setResponse['weight']=$shipping['weight'];
+    $setResponse['waypoints']=$shipping['waypoints'];
+    $setResponse['price']=array(
+      'distance'=>$response['resultado']['distancia'],
+      'subtotal'=>$response['resultado']['total'],
+      'taxes'=>'',
+      'total'=>$response['resultado']['total'],
+      'currency'=>'usd'
+    );
+    $setResponse['shareLocationUrl']='https://envios.pedidosya.com.uy/tracking/ODYzMjAxMTAyMTMwOTM0Njk0Njg3NCNBUEkjODYz';
+    $setResponse['proofOfDelivery']=true;
+    $setResponse['notificationMail']=$shipping['notificationMail'];
+    $setResponse['onlineSupportUrl']='https://someOnlineSupportUrl.com';
+    return json_encode($setResponse); 
+
+   }
+
+   return $response;
+}
 //  ------------------------------------------------Fex Shipping-----------------------------------------------
 
 
@@ -522,7 +551,8 @@ $data['reg_origen'] =0;
   
   $resp = curl_exec($curl);
   curl_close($curl);
-  return $resp;
+  return $this->setShippingResponseAsPadidosya($resp,'fex',$shipping);
+
 
 }
 
