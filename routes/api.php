@@ -59,6 +59,8 @@ Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
 
 Route::post('/CabifyWebhook', [cabifyController::class, 'Callback']);
 
+Route::post('/updateStatus', [cabifyController::class, 'updateStatus']);
+
 Route::post('/CabifyCencellation', [cabifyController::class, 'PostCancelDelivery']);
 
 // -----------------------------------------------Fex Routes------------------------------------------
@@ -68,6 +70,8 @@ Route::post('/FexEstimate', [FexController::class, 'FexCotizer']);
 Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
 
 Route::post('/FexCancellation', [FexController::class, 'PostFexCancellation']);
+
+Route::post('/FexCallback', [FexController::class, 'FexCallback']);
 
 // -----------------------------------------Gotoshop Route-------------------------------------
 

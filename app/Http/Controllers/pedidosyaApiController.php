@@ -341,8 +341,10 @@ class pedidosyaApiController extends Controller
 //-------------------------------------------------SetStatus---------------------------------------------------
 
         function setStatus(Request $request){
+          // echo "<pre>";
+          // print_r($request->all());die;
 
-          $url = "https://courier-api.pedidosya.com/http://127.0.0.1:8000/api/setStatus";
+          $url = "https://courier-api.pedidosya.com/api/setStatus";
 
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -360,7 +362,7 @@ class pedidosyaApiController extends Controller
         $data['referenceId'] = $request->referenceId;
         $data['generated'] = $request->generated;
         $data['transmitted'] = $request->transmitted;
-        
+        // print_r($data);die;
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);

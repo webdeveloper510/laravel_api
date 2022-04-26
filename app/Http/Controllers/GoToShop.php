@@ -313,7 +313,7 @@ class GoToShop extends Controller
       $data = array();
     $data['acceso'] ="DEB454D-A086639-8CD60D0-77C";
     $data['ori_lat'] =$request['waypoints'][0]['latitude'];
-    $data['ori_lng'] =$request['waypoints'][0]['longitude'];;
+    $data['ori_lng'] =$request['waypoints'][0]['longitude'];
     $data['des_lat'] =$request['waypoints'][1]['latitude'];
     $data['des_lng'] =$request['waypoints'][1]['longitude'];
     $data['vehiculo'] = 3;

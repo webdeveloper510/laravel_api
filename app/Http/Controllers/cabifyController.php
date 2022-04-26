@@ -205,9 +205,46 @@ echo $response;
           
    }
 
-  //  function updateStatus(){
+  // ------------------------------------------UpdateStatus of callback---------------------------------------
+   
+    function updateStatus(Request $request){
+          // echo "<pre>";
+          // print_r($request->all());die;
+      $url = "http://example.com/your/callback/here";
 
+      $curl = curl_init($url);
+      curl_setopt($curl, CURLOPT_URL, $url);
+      curl_setopt($curl, CURLOPT_POST, true);
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+      
+      $headers = array(
+        "Content-Type: application/json",
+        'Authorization: Bearer '.$request->token
+     );
+      curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+      
+   $data = array();
+   $data['id'] =$request->id;
+   $data['state'] =$request->state;
+   $data['delivery_attempt'] =$request->delivery_attempt;
+   $data['tracking'] =$request->tracking;
+   $data['asset'] =$request->asset;
+   $data['driver'] =$request->driver;
 
+for($i=0;$i<count($request['headers']);$i++){
+    $data['headers'][$i]['name'] = $request['headers'][$i]['name'];
+    $data['headers'][$i]['value'] = $request['headers'][$i]['value'];
+    }
 
-  //  }
+   // print_r($data);die;
+
+      curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+      
+      $resp = curl_exec($curl);
+      curl_close($curl);
+      return $resp;
+
+  }
 }
