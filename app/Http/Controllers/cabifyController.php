@@ -123,7 +123,7 @@ echo $response;
       "receiver":{"mobileCc":34,"mobileNum":666998877,"name":"John"}},{"name":"Agustin","instr":"Entregaren mano","addr":"La Cumparsita1475",
       "city":"Montevideo","country":"England","loc":[-33.40626862115443,-70.5728953556456],"receiver":{"mobileCc":34,"mobileNum":666998877,"name":"John"}}]}}',
      CURLOPT_HTTPHEADER => array(
-       'Authorization: Bearer oTe2jxPxPLxLlLkxsgSlZ2jwhHLzJx',
+       'Authorization: Bearer F1zSOKsQbpuj9tsDA_NOaxeAN9TZbz',
        'Content-Type: application/json'
      ),
    ));

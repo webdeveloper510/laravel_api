@@ -10,14 +10,28 @@ use Illuminate\Http\Request;
 class GoToShop extends Controller
 {
   function GoToShopShipping(Request $request){ 
-    //print_r($request->all());die;    
+   // print_r($request->all());die;    
       $estimate['cabify'] =$this->GetEstimate($request->all());         
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
-      $key = $this->matchPrice($estimate['price']);
+      // echo "<pre>";
+      // print_r($estimate);
+      $key = $this->matchPrice($estimate);
+
      //echo $key;
-      $this->GoToShopCreateShipment($key,$request->all(),$estimate['result']);
+      $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result']);
   }
+
+  // ----------------------------------------------GoToShop Estimate-------------------------------------------
+
+    function GoToShopEstimate(Request $request){     
+      $estimate['cabify'] =$this->GetEstimate($request->all());         
+      $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
+      $estimate['fex'] =$this->FexCotizer($request->all());
+      
+      
+
+    }
 
   /*--------------------------------------------Get minimum Price Api Provider-------------------------------- */
 
@@ -26,8 +40,11 @@ class GoToShop extends Controller
     $key = array_search($value, $estimate);  
     return $key;
   }
+  
 /*-----------------------------------------------------Create Shipment----------------------------------------*/
+
   function GoToShopCreateShipment($plateform,$postData,$result){
+
     if($plateform=='padidosya_estimate'){
       $response = $this->CreateShippingOrder($postData);
     }
@@ -184,7 +201,7 @@ class GoToShop extends Controller
          
          $headers = array(
            "Content-Type: application/json",
-           "Authorization:".$postdata['token']
+           "Authorization:".$postdata['access_token']
         );
          curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
          
@@ -226,7 +243,7 @@ class GoToShop extends Controller
          curl_close($curl);
           $data = json_decode($resp,true);
           //print_r($data);die;
-          return ['price'=>$data['price']['total'],'result'=>$data];
+          return [$data['price']['total'],'result'=>$data];
        }
 // -------------------------------------------Cabify Estimate-----------------------------------------------
 
@@ -258,16 +275,18 @@ class GoToShop extends Controller
           CURLOPT_POSTFIELDS =>'{"query":"query estimates ($estimateInput: EstimatesInput) {\\r\\n    estimates (estimateInput: $estimateInput) {\\r\\n        distance\\r\\n        duration\\r\\n        eta {\\r\\n            formatted\\r\\n            lowAvailability\\r\\n        }\\r\\n        priceBase {\\r\\n            amount\\r\\n            currency\\r\\n        }\\r\\n        product {\\r\\n            description {\\r\\n                en\\r\\n                es\\r\\n                pt\\r\\n            }\\r\\n            icon\\r\\n            id\\r\\n            name {\\r\\n                ca\\r\\n                en\\r\\n                es\\r\\n                pt\\r\\n            }\\r\\n        }\\r\\n        route\\r\\n        supplements {\\r\\n            description\\r\\n            kind\\r\\n            name\\r\\n            payToDriver\\r\\n            price {\\r\\n                amount\\r\\n                currency\\r\\n                currencySymbol\\r\\n                formatted\\r\\n            }\\r\\n            taxCode\\r\\n        }\\r\\n        total {\\r\\n            amount\\r\\n            currency\\r\\n        }\\r\\n    }\\r\\n}",
           "variables":{"estimateInput":'.$variable.'}}',
           CURLOPT_HTTPHEADER => array(
-            "Authorization: Bearer aU5MV2MpG9erc8PYdB3UeMw2aP8ELT",
+            'Authorization: Bearer jNNIuGm9GdwzSzAYoNA0O72V9W6jRJ',
             'Content-Type: application/json'
           ),
         ));
         
         $response = curl_exec($curl);
         $response = json_decode($response,true);
+        // echo "<pre>";
+        // print_r($response);die;
         curl_close($curl);
        // return  $response;
-        return ['price'=>$response['data']['estimates'][0]['total']['amount'],'result'=>$response];
+        return [$response['data']['estimates'][0]['total']['amount'],'result'=>$response];
      
       }
 
@@ -303,9 +322,9 @@ class GoToShop extends Controller
       $resp = curl_exec($curl); 
       $response = json_decode($resp,true);
      // print_r($response);
-//return $resp;
+     //return $resp;
       curl_close($curl);
-     return ['price'=>$response['resultado']['total'],'result'=>$response];
+     return [$response['resultado']['total'],'result'=>$response];
 
     }
 
@@ -371,22 +390,22 @@ class GoToShop extends Controller
   // --------------------------------------------Cabify Shipping---------------------------------------------
 
   function PostCreateDelivery($shipping,$result){
-     $data = $shipping['waypoints'];
+     $data = $shipping['waypoints'];   
      $curl = curl_init();
-    $request_data = array(
+     $request_data = array(
     'query' => 'mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}',
     'variables' => array(
-      'optimize' => true,
-      'senderId'=>'c432e92c224370bccf5715eae53ff94a',
-      'productId'=>'db10033ac9b52ac4e1d785107f3e96aa'
+    'optimize' => true,
+    'senderId'=>'c432e92c224370bccf5715eae53ff94a',
+    'productId'=>'db10033ac9b52ac4e1d785107f3e96aa',
       
-    ),
+    ), 
   );
+
   $variable['optimize'] =true;
   $variable['senderId'] ='c432e92c224370bccf5715eae53ff94a';
   $variable['productId'] ='db10033ac9b52ac4e1d785107f3e96aa';
-  // echo "<pre>";
-  // print_r($data);die;
+ 
   for($i=0;$i<count($data);$i++)
 {
   $location = array();
@@ -394,21 +413,25 @@ class GoToShop extends Controller
   $location[] = $data[$i]['longitude'];
   //$location[]=$data[$i]['latitude'].','.$data[$i]['longitude'];
   $receiver = array(
-    'mobileCc'=>34,
-    'mobileNum'=>666998877,
+    'mobileCc'=>"34",
+    'mobileNum'=>"666998877",
     'name'=>'John'
   );
   $data1[$i]['name'] = $data[$i]['name'];
   $data1[$i]['instr'] =$data[$i]['instructions'];
   $data1[$i]['addr'] = $data[$i]['addressStreet'];
   $data1[$i]['city'] =$data[$i]['city'];
+  $data1[$i]['num'] ='1';
   $data1[$i]['country'] = 'England';
   $data1[$i]['loc'] = $location;
   $data1[$i]['receiver'] = $receiver;
 }    
-   $deleivery_points = json_encode($data1);
+   $deliveryPoints = json_encode($data1);
+  //   echo "<pre>";
+  //  print_r($deliveryPoints);die;
+
    $json_data = array_merge($request_data['variables'],$data1);
-    $variables1 = json_encode($json_data);
+   $variables1 = json_encode($json_data);
    $json_data1['query'] = $request_data['query'];
    $another = array_merge($json_data1,$json_data);
    $shiping = json_encode($another);
@@ -422,13 +445,17 @@ class GoToShop extends Controller
    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
    CURLOPT_CUSTOMREQUEST => 'POST',
    CURLOPT_POSTFIELDS =>'{"query":"mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}",
-   "variables":{"optimize":true,"senderId":"280e5faa46f711ecacc0cad412eb504e","productId":"db10033ac9b52ac4e1d785107f3e96aa","deliveryPoints":'.$deleivery_points.'}}',
+   "variables":{"optimize":true,"senderId":"6bb956433d5d9e3a75d018054e7c7e52","productId":"75dd566797369d1f0927102e5356ce59","deliveryPoints":'.$deliveryPoints.'}}',
    CURLOPT_HTTPHEADER => array(
-     'Authorization: Bearer 2Pauxez_tZEKJ69atctLUTKZHBrSgT',
+    'Authorization: Bearer jNNIuGm9GdwzSzAYoNA0O72V9W6jRJ',
      'Content-Type: application/json'
    ),
  ));
 $response = curl_exec($curl);
+ echo "<pre>";
+print_r($response);die;
+
+
 curl_close($curl);
 return $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result);
 //return $response;    
@@ -603,7 +630,7 @@ function PostCancelDelivery(){
    CURLOPT_POSTFIELDS =>'{"query":"mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}",
    "variables":{"optimize":true,"senderId":"c432e92c224370bccf5715eae53ff94a","productId":"db10033ac9b52ac4e1d785107f3e96aa","deliveryPoints":[{"name":"PickUp point","instr":"https://url.example","addr":"Calle de Évora","num":"1","city":"Madrid","country":"Spain","loc":[40.3865045,-3.718262699999999],"receiver":{"mobileCc":"34","mobileNum":"666778899","name":"John Doe"}},{"name":"Destination point","addr":"Calle de Évora","num":"1","city":"Madrid","country":"Spain","loc":[40.3865045,-3.718262699999999],"receiver":{"mobileCc":"34","mobileNum":"666998877","name":"Jane Doe"}}]}}',
    CURLOPT_HTTPHEADER => array(
-     'Authorization: Bearer Nv91W2HwY-w6xRtYodzCuOh7nolfKa',
+    'Authorization: Bearer jNNIuGm9GdwzSzAYoNA0O72V9W6jRJ',
      'Content-Type: application/json'
    ),
  ));

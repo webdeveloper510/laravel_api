@@ -77,6 +77,8 @@ Route::post('/FexCallback', [FexController::class, 'FexCallback']);
 
 Route::post('/shipping', [GoToShop::class, 'GoToShopShipping']);
 
+Route::post('/Estimate', [GoToShop::class, 'GoToShopEstimate']);
+
 Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
 
 Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
