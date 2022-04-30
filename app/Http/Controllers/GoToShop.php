@@ -16,11 +16,12 @@ class GoToShop extends Controller
 
   function GoToShopShipping(Request $request){ 
    // print_r($request->all());die;    
+    $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());         
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
       // echo "<pre>";
-      // print_r($estimate);
+      // print_r($estimate);die;
       $key = $this->matchPrice($estimate);
 
      //echo $key;
@@ -162,7 +163,7 @@ if(!empty($insert_data)){
     }
 // --------------------------------------Padidosya Authentication---------------------------------------
 
-  function getToken($token){  
+  function getToken($token){ 
     $url = "https://auth-api.pedidosya.com/v1/token";
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -179,11 +180,15 @@ if(!empty($insert_data)){
     $data['grant_type'] = $token['grant_type'];
     $data['password'] = $token['password'];
     $data['username'] = $token['username'];    
+    // echo "<pre>";
+    // print_r($data);die;
     curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);    
     $resp = curl_exec($curl);
     $response = json_decode($resp,true);
+    echo "<pre>";
+    print_r($response);die;
     if($response['access_token']){
       $store = new Authentication;
       $store->client_id = $token['client_id'];
@@ -304,43 +309,32 @@ if(!empty($insert_data)){
 // -------------------------------------------Cabify Estimate-----------------------------------------------
 
        function GetEstimate($postData){ 
+        $parcel = $this->createParcel($postData);
+        die;
         $stops['loc'] = array();   
         $curl = curl_init();
+      curl_setopt_array($curl, array(
+      CURLOPT_URL => 'https://delivery.api.cabify-sandbox.com/v1/parcels/estimate',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS =>'{
+            "parcel_ids":["8668d5d5-fc0e-4002-ac95-3ad8fa04d644"]
+         }',
+      CURLOPT_HTTPHEADER => array(
+     'Authorization: Bearer UJERz57jHZWUYiJCyWo878FjzUdY0o',
+     'Content-Type: application/json'
+       ),
+       ));
 
-        $variable=array();
-        $variable=array(
-          'requesterId'=>'280e5faa46f711ecacc0cad412eb504e',
-          'startType'=>'ASAP',
-           'startAt'=>'2020-08-01 08:00:00',
-           "stops"=>[
-            ["loc"=> [$postData['waypoints'][0]['latitude'] , $postData['waypoints'][0]['longitude'] ] ],
-            [ "loc"=> [ $postData['waypoints'][1]['latitude'], $postData['waypoints'][1]['longitude'] ] ]
-          ]
-           );
-           $variable = json_encode($variable);
-        //print_r($variable);die;
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => 'POST',
-          CURLOPT_POSTFIELDS =>'{"query":"query estimates ($estimateInput: EstimatesInput) {\\r\\n    estimates (estimateInput: $estimateInput) {\\r\\n        distance\\r\\n        duration\\r\\n        eta {\\r\\n            formatted\\r\\n            lowAvailability\\r\\n        }\\r\\n        priceBase {\\r\\n            amount\\r\\n            currency\\r\\n        }\\r\\n        product {\\r\\n            description {\\r\\n                en\\r\\n                es\\r\\n                pt\\r\\n            }\\r\\n            icon\\r\\n            id\\r\\n            name {\\r\\n                ca\\r\\n                en\\r\\n                es\\r\\n                pt\\r\\n            }\\r\\n        }\\r\\n        route\\r\\n        supplements {\\r\\n            description\\r\\n            kind\\r\\n            name\\r\\n            payToDriver\\r\\n            price {\\r\\n                amount\\r\\n                currency\\r\\n                currencySymbol\\r\\n                formatted\\r\\n            }\\r\\n            taxCode\\r\\n        }\\r\\n        total {\\r\\n            amount\\r\\n            currency\\r\\n        }\\r\\n    }\\r\\n}",
-          "variables":{"estimateInput":'.$variable.'}}',
-          CURLOPT_HTTPHEADER => array(
-            'Authorization: Bearer jNNIuGm9GdwzSzAYoNA0O72V9W6jRJ',
-            'Content-Type: application/json'
-          ),
-        ));
-        
-        $response = curl_exec($curl);
-        $response = json_decode($response,true);
-        // echo "<pre>";
-        // print_r($response);die;
-        curl_close($curl);
+      $response = curl_exec($curl);
+
+      curl_close($curl);
+      echo $response;
        // return  $response;
         return [$response['data']['estimates'][0]['total']['amount'],'result'=>$response];
      
@@ -447,77 +441,56 @@ if(!empty($insert_data)){
     
   // --------------------------------------------Cabify Shipping---------------------------------------------
 
-  function PostCreateDelivery($shipping,$result){
-     $data = $shipping['waypoints'];   
+  function createParcel($shipping){
+    // echo "<pre>";
+    // print_r($shipping);die;
+    $data = array();
+    $name = $shipping['waypoints'][0]['name'];
+    $phone = $shipping['waypoints'][0]['phone'];
+    $lat = $shipping['waypoints'][0]['latitude'];
+    $lon = $shipping['waypoints'][0]['longitude'];
+    $addr = $shipping['waypoints'][0]['addressStreet'];
+    $instr = $shipping['waypoints'][0]['instructions'];
+    $phone = $shipping['waypoints'][1]['phone'];
+    $name1 = $shipping['waypoints'][1]['name'];
+    $latitude = $shipping['waypoints'][1]['latitude'];
+    $longitude = $shipping['waypoints'][1]['longitude'];
+    $addressStreet = $shipping['waypoints'][1]['addressStreet'];
+    $instructions = $shipping['waypoints'][1]['instructions'];
+
      $curl = curl_init();
-     $request_data = array(
-    'query' => 'mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}',
-    'variables' => array(
-    'optimize' => true,
-    'senderId'=>'c432e92c224370bccf5715eae53ff94a',
-    'productId'=>'db10033ac9b52ac4e1d785107f3e96aa',
-      
-    ), 
-  );
+     curl_setopt_array($curl, array(
+       CURLOPT_URL => 'https://delivery.api.cabify-sandbox.com/v1/parcels',
+       CURLOPT_RETURNTRANSFER => true,
+       CURLOPT_ENCODING => '',
+       CURLOPT_MAXREDIRS => 10,
+       CURLOPT_TIMEOUT => 0,
+       CURLOPT_FOLLOWLOCATION => true,
+       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+       CURLOPT_CUSTOMREQUEST => 'POST',
+       CURLOPT_POSTFIELDS =>'{
+         "parcels":[{
+             "pickup_info":{"contact":{"name":'.$name.',"phone":'.$phone.'},"loc":{"lat":'.$lat.',"lon":'.$lon.'},"addr":'.$addr.',"instr":'.$instr.'},
+             "dropoff_info":{"contact":{"phone":'.$phone.',"name":'.$name.'},"loc":{"lat":'.$latitude.',"lon":'.$longitude.'},"addr":'.$addressStreet.',"instr":'.$instructions.'},"external_id":"1654694544"
 
-  $variable['optimize'] =true;
-  $variable['senderId'] ='c432e92c224370bccf5715eae53ff94a';
-  $variable['productId'] ='db10033ac9b52ac4e1d785107f3e96aa';
- 
-  for($i=0;$i<count($data);$i++)
-{
-  $location = array();
-  $location[] = $data[$i]['latitude'];
-  $location[] = $data[$i]['longitude'];
-  //$location[]=$data[$i]['latitude'].','.$data[$i]['longitude'];
-  $receiver = array(
-    'mobileCc'=>"34",
-    'mobileNum'=>"666998877",
-    'name'=>'John'
-  );
-  $data1[$i]['name'] = $data[$i]['name'];
-  $data1[$i]['instr'] =$data[$i]['instructions'];
-  $data1[$i]['addr'] = $data[$i]['addressStreet'];
-  $data1[$i]['city'] =$data[$i]['city'];
-  $data1[$i]['num'] ='1';
-  $data1[$i]['country'] = 'England';
-  $data1[$i]['loc'] = $location;
-  $data1[$i]['receiver'] = $receiver;
-}    
-   $deliveryPoints = json_encode($data1);
-  //   echo "<pre>";
-  //  print_r($deliveryPoints);
+             }]
+             }',
+       CURLOPT_HTTPHEADER => array(
+         'Content-Type: application/json',
+         "Authorization: Bearer _2l9k2KyagXMoipuKVhYOF-Izgebus"
+       ),
+     ));
+     
+     $response = curl_exec($curl);     
+     $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-   $json_data = array_merge($request_data['variables'],$data1);
-   $variables1 = json_encode($json_data);
-   $json_data1['query'] = $request_data['query'];
-   $another = array_merge($json_data1,$json_data);
-   $shiping = json_encode($another);
-  curl_setopt_array($curl, array(
-   CURLOPT_URL => 'https://cabify-sandbox.com/api/v3/graphql',
-   CURLOPT_RETURNTRANSFER => true,
-   CURLOPT_ENCODING => '',
-   CURLOPT_MAXREDIRS => 10,
-   CURLOPT_TIMEOUT => 0,
-   CURLOPT_FOLLOWLOCATION => true,
-   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-   CURLOPT_CUSTOMREQUEST => 'POST',
-   CURLOPT_POSTFIELDS =>'{"query":"mutation CreateDelivery($senderId: String!, $productId: String!, $deliveryPoints: [DeliveryPointInput]!, $optimize: Boolean) {\\r\\n  createDelivery(deliveryInput: {senderId: $senderId, productId: $productId, deliveryPoints: $deliveryPoints, optimize: $optimize}) {\\r\\n    sender {\\r\\n      id\\r\\n      name\\r\\n      email\\r\\n    }\\r\\n    id\\r\\n    deliveryPoints {\\r\\n      addr\\r\\n      city\\r\\n      receiver {\\r\\n        mobileCc\\r\\n        mobileNum\\r\\n        name\\r\\n      }\\r\\n      instr\\r\\n      loc\\r\\n      name\\r\\n      num\\r\\n    }\\r\\n    startAt\\r\\n    startType\\r\\n  }\\r\\n}",
-   "variables":{"optimize":true,"senderId":"6bb956433d5d9e3a75d018054e7c7e52","productId":"75dd566797369d1f0927102e5356ce59","deliveryPoints":'.$deliveryPoints.'}}',
-   CURLOPT_HTTPHEADER => array(
-    'Authorization: Bearer Cf5mfDWhyU06vy_l5B2RdkXDfRLFTz',
-     'Content-Type: application/json'
-   ),
- ));
-$response = curl_exec($curl);
-//  echo "<pre>";
-$httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-// print_r($response);die;
-
-
-curl_close($curl);
-return $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result,$httpcode);
+     curl_close($curl);
+     echo "<pre>";
+     echo $httpcode;
+     print_r($response);die;
+     echo $response;
+     
+//return $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result,$httpcode);
 //return $response;    
 
  }
@@ -596,7 +569,7 @@ function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate,
 
    }
 
-   return ['code'=>$code,'response'=>$response];
+   return ['code'=>$code,'response'=>$response];  
 }
 //  ------------------------------------------------Fex Shipping-----------------------------------------------
 
@@ -735,7 +708,7 @@ return $resp;
 
 }
 
-/**---------------------------------------------Get Shipping Padidpsya details------------------------------- */
+/**-------------------------------------------Get Shipping Padidosya details------------------------------- */
 
 function GetShippingOrderDetails(Request $request){      
         
@@ -758,7 +731,31 @@ function GetShippingOrderDetails(Request $request){
     return $resp;
  }
 
-// ------------------------------------------------Get Delivery Cabify details---------------------------------
+//  -------------------------------------------Shipping Proof Of Delivery--------------------------------------
+
+      function ShippingProofOfDelivery(Request $request){
+       
+          $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";
+            $curl = curl_init($url);
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            
+            $headers = array(
+               "Content-Type: application/json",
+               "Authorization:".$request->token
+            );
+        
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            
+            $resp = curl_exec($curl);
+            curl_close($curl);
+            return $resp;
+         }
+
+
+// ---------------------------------------------Get Delivery Cabify details------------------------------------
 
   function DeliveryDetails(Request $request){
 
@@ -789,5 +786,164 @@ function GetShippingOrderDetails(Request $request){
   function FexDelieveryDetail(Request $request){
 
   }
+
+  //---------------------------------------------Padidosya Create Callback-----------------------------------------------
+
+  function createCallback(Request $request){
+
+    $url = "https://courier-api.pedidosya.com/v1/callbacks";
+
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_PUT, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    
+    $headers = array(
+       "Content-Type: application/json",
+       "Authorization:".$request->token
+    );
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    for($i=0; $i<count($request->callbacks);$i++){
+      $data['callbacks'][$i]['url'] = $request['callbacks'][$i]['url'];
+      $data['callbacks'][$i]['authorizationKey'] = $request['callbacks'][$i]['authorizationKey'];
+      $data['callbacks'][$i]['topic'] = $request['callbacks'][$i]['topic'];
+      $data['callbacks'][$i]['notificationType'] = $request['callbacks'][$i]['notificationType'];
+    }
+
+    // echo "<pre>";
+    // print_r(json_encode($data));die;
+    
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+    
+    //for debug only!
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    
+    $resp = curl_exec($curl);
+    curl_close($curl);
+    var_dump($resp);
+
+  }
+
+// --------------------------------------------------Set Status---------------------------------------------
+
+  function setStatus(Request $request){
+    
+    $url = "https://courier-api.pedidosya.com/api/updateStatus";
+
+  $curl = curl_init($url);
+  curl_setopt($curl, CURLOPT_URL, $url);
+  curl_setopt($curl, CURLOPT_POST, true);
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+  
+  $headers = array(
+     "Content-Type: application/json",
+  );
+  curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+  
+  $data = array();
+  $data['topic'] = $request->topic;
+  $data['id'] = $request->id;
+  $data['referenceId'] = $request->referenceId;
+  $data['generated'] = $request->generated;
+  $data['transmitted'] = $request->transmitted;
+  // print_r($data);die;
+  curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+  curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+  
+  $resp = curl_exec($curl);
+  curl_close($curl);
+  return $resp;
+
+  } 
+
+    // -------------------------------------------Cabify Callback---------------------------------------------
+
+    function Callback(Request $request){
+      // echo "<pre>";
+      // print_r($request->all());die;
+    $url = "https://delivery.api.cabify-sandbox.com/v1/webhooks";
+
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    
+    $headers = array(
+      "Content-Type: application/json",
+      'Authorization: Bearer '.$request->token
+   );
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    
+ $data = array();
+ $data['hook'] =$request->hook;
+ $data['callback_url'] =$request->callback_url;
+
+for($i=0;$i<count($request['headers']);$i++){
+  $data['headers'][$i]['name'] = $request['headers'][$i]['name'];
+  $data['headers'][$i]['value'] = $request['headers'][$i]['value'];
+  }
+
+ // print_r($data);die;
+
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    
+    $resp = curl_exec($curl);
+    curl_close($curl);
+    return $resp;
+    
+}
+
+// --------------------------------------------------Fex Callback--------------------------------------------
+
+function FexCallback(Request $request){
+
+  $url = "";
+
+  $curl = curl_init($url);
+  curl_setopt($curl, CURLOPT_URL, $url);
+  curl_setopt($curl, CURLOPT_POST, true);
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+  
+  $headers = array(
+    "Content-Type: application/json",
+ );
+  curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+  
+$data = array();
+
+  $data['servicio'] =$request->acceso;
+  $data['tipo'] =$request->tipo;
+  $data['estado'] =$request->estado;
+  $data['descripcion'] =$request->descripcion;
+
+  $data['conductor']=array(
+    'nombre'=>'Nombre Completo',
+    'telefono'=>'000000000',
+    'patente'=>'Patente',
+    'tipo'=>'Camioneta',
+    'posicion'=>array(
+      'lat'=>'00.00000000',
+      'lng'=>'00.00000000'
+     )
+    );
+
+        // echo "<pre>";
+        // print_r(json_encode($data));die;
+
+  curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+  curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+  
+  $resp = curl_exec($curl);
+  curl_close($curl);
+  return $resp;
+
+
+}
+
 
 }

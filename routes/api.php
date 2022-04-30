@@ -33,6 +33,8 @@ Route::post('/CreateShippingOrder', [pedidosyaApiController::class, 'CreateShipp
 
 Route::post('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShippingOrderDetails']);
 
+Route::get('/ShippingProofOfDelivery', [pedidosyaApiController::class, 'ShippingProofOfDelivery']);
+
 Route::post('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
 
 Route::post('/CreateEstimateShipping', [pedidosyaApiController::class, 'EstimateShippingOrder']);
@@ -46,6 +48,8 @@ Route::post('/CancelShippingOrder', [pedidosyaApiController::class, 'PostCancelS
 Route::put('/createCallback', [pedidosyaApiController::class, 'createCallback']);
 
 Route::put('/status', [pedidosyaApiController::class, 'setStatus']);
+
+Route::put('/updateStatus', [pedidosyaApiController::class, 'updateStatus']);
 
 // ---------------------------------------------Cabify Routes----------------------------------------
 

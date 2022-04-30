@@ -29,7 +29,6 @@ class pedidosyaApiController extends Controller
         $data['grant_type'] = $request->grant_type;
         $data['password'] = $request->password;
         $data['username'] = $request->username;
-
         
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
@@ -324,8 +323,8 @@ class pedidosyaApiController extends Controller
             $data['callbacks'][$i]['notificationType'] = $request['callbacks'][$i]['notificationType'];
           }
   
-          echo "<pre>";
-          print_r(json_encode($data));die;
+          // echo "<pre>";
+          // print_r(json_encode($data));die;
           
           curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
           
