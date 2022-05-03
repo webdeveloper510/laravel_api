@@ -29,7 +29,6 @@ class pedidosyaApiController extends Controller
         $data['grant_type'] = $request->grant_type;
         $data['password'] = $request->password;
         $data['username'] = $request->username;
-
         
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
@@ -97,8 +96,8 @@ class pedidosyaApiController extends Controller
   
     $resp = curl_exec($curl);
     $data = json_decode($resp, true);
-    // echo "<pre>";
-    // print_r ($data); die;
+    echo "<pre>";
+    print_r ($data); die;
     if($data['id']){      
       $shipment = new shipmentModel;
       $shipment->user_id = "text";
@@ -214,6 +213,7 @@ class pedidosyaApiController extends Controller
 
         for($i=0;$i<count($request->waypoints);$i++){
           $data['waypoints'][$i]['type'] = $request['waypoints'][$i]['type'];
+
           $data['waypoints'][$i]['addressStreet'] = $request['waypoints'][$i]['addressStreet'];
           $data['waypoints'][$i]['addressAdditional'] = $request['waypoints'][$i]['addressAdditional'];
           $data['waypoints'][$i]['city'] = $request['waypoints'][$i]['city'];
@@ -254,11 +254,12 @@ class pedidosyaApiController extends Controller
       $data=array();      
       for($i=0;$i<count($request->waypoints);$i++){
         $data['waypoints'][$i]['addressStreet'] = $request['waypoints'][$i]['addressStreet'];
+        
         $data['waypoints'][$i]['city'] = $request['waypoints'][$i]['city'];
         $data['waypoints'][$i]['latitude'] = $request['waypoints'][$i]['latitude'];
         $data['waypoints'][$i]['longitude'] = $request['waypoints'][$i]['longitude'];
       }
-      curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+      curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));   
       curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       
@@ -312,19 +313,18 @@ class pedidosyaApiController extends Controller
           
           $headers = array(
              "Content-Type: application/json",
-             "Authorization:1763-122337-a645d170-da19-4fbc-7b9a-6effbdedd376"
-
+             "Authorization:".$request->token
           );
           curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-          for($i=0; $i<count($request['callbacks']);$i++){
+          for($i=0; $i<count($request->callbacks);$i++){
             $data['callbacks'][$i]['url'] = $request['callbacks'][$i]['url'];
             $data['callbacks'][$i]['authorizationKey'] = $request['callbacks'][$i]['authorizationKey'];
             $data['callbacks'][$i]['topic'] = $request['callbacks'][$i]['topic'];
             $data['callbacks'][$i]['notificationType'] = $request['callbacks'][$i]['notificationType'];
           }
   
-          echo "<pre>";
-          print_r(json_encode($data));die;
+          // echo "<pre>";
+          // print_r(json_encode($data));die;
           
           curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
           
@@ -340,8 +340,10 @@ class pedidosyaApiController extends Controller
 //-------------------------------------------------SetStatus---------------------------------------------------
 
         function setStatus(Request $request){
+          // echo "<pre>";
+          // print_r($request->all());die;
 
-          $url = "https://courier-api.pedidosya.com/your-callback-urlcreateCallback";
+          $url = "https://courier-api.pedidosya.com/api/setStatus";
 
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -359,7 +361,7 @@ class pedidosyaApiController extends Controller
         $data['referenceId'] = $request->referenceId;
         $data['generated'] = $request->generated;
         $data['transmitted'] = $request->transmitted;
-        
+        // print_r($data);die;
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);

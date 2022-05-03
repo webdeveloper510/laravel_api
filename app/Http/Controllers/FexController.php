@@ -8,7 +8,7 @@ class FexController extends Controller
 {
 
 
-  // ------------------------------------Fex Estimate---------------------------------
+  // ----------------------------------------------Fex Estimate-------------------------------------------------
 
     function FexCotizer(Request $request){
 
@@ -44,7 +44,7 @@ class FexController extends Controller
 
     }
 
-// --------------------------------Fex Shipping---------------------------------------
+// ------------------------------------------------Fex Shipping------------------------------------------------
 
     function  FexSolicitar(Request $request){
 
@@ -89,7 +89,7 @@ class FexController extends Controller
         return $resp;
   
     }
-// ------------------------------------Fex Cancellation-----------------------------------
+// ----------------------------------------------Fex Cancellation----------------------------------------------
 
     function PostFexCancellation(Request $request){
             // echo "<pre>";
@@ -121,4 +121,53 @@ class FexController extends Controller
       return $resp;
 
     }
+
+    // -----------------------------------------------Fex Webhook (callback)--------------------------------------
+
+        function FexCallback(Request $request){
+
+          $url = "";
+
+          $curl = curl_init($url);
+          curl_setopt($curl, CURLOPT_URL, $url);
+          curl_setopt($curl, CURLOPT_POST, true);
+          curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+          
+          $headers = array(
+            "Content-Type: application/json",
+         );
+          curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+          
+       $data = array();
+    
+          $data['servicio'] =$request->acceso;
+          $data['tipo'] =$request->tipo;
+          $data['estado'] =$request->estado;
+          $data['descripcion'] =$request->descripcion;
+
+          $data['conductor']=array(
+            'nombre'=>'Nombre Completo',
+            'telefono'=>'000000000',
+            'patente'=>'Patente',
+            'tipo'=>'Camioneta',
+            'posicion'=>array(
+              'lat'=>'00.00000000',
+              'lng'=>'00.00000000'
+             )
+            );
+
+                echo "<pre>";
+                print_r(json_encode($data));die;
+
+          curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
+          curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+          curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+          
+          $resp = curl_exec($curl);
+          curl_close($curl);
+          return $resp;
+    
+
+       }
+
 }

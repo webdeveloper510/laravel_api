@@ -33,6 +33,8 @@ Route::post('/CreateShippingOrder', [pedidosyaApiController::class, 'CreateShipp
 
 Route::post('/GetShippingOrderDetails', [pedidosyaApiController::class, 'GetShippingOrderDetails']);
 
+Route::get('/ShippingProofOfDelivery', [pedidosyaApiController::class, 'ShippingProofOfDelivery']);
+
 Route::post('/GetShippingOrderTracking', [pedidosyaApiController::class, 'GetShippingOrderTracking']);
 
 Route::post('/CreateEstimateShipping', [pedidosyaApiController::class, 'EstimateShippingOrder']);
@@ -47,17 +49,23 @@ Route::put('/createCallback', [pedidosyaApiController::class, 'createCallback'])
 
 Route::put('/status', [pedidosyaApiController::class, 'setStatus']);
 
+Route::put('/updateStatus', [pedidosyaApiController::class, 'updateStatus']);
+
 // ---------------------------------------------Cabify Routes----------------------------------------
 
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
 
 Route::post('/createdelivery', [cabifyController::class, 'PostCreateDelivery']);
 
+Route::post('/CreateJourney', [cabifyController::class, 'CreateJourney']);
+
 Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
 
 Route::post('/CabifyWebhook', [cabifyController::class, 'Callback']);
 
-//Route::post('/changing_status', [cabifyController::class, 'updateStatus']);
+Route::post('/updateStatus', [cabifyController::class, 'updateStatus']);
+
+Route::post('/CabifyCencellation', [cabifyController::class, 'PostCancelDelivery']);
 
 // -----------------------------------------------Fex Routes------------------------------------------
 
@@ -67,8 +75,16 @@ Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
 
 Route::post('/FexCancellation', [FexController::class, 'PostFexCancellation']);
 
+Route::post('/FexCallback', [FexController::class, 'FexCallback']);
+
 // -----------------------------------------Gotoshop Route-------------------------------------
 
-Route::post('/Estimate', [GoToShop::class, 'GoToShopEstimate']);
+Route::post('/shipping', [GoToShop::class, 'GoToShopShipping']);
+
+Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
+
+Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
 
 Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
+
+Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
