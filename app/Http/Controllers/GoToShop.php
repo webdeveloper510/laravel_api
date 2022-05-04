@@ -855,6 +855,13 @@ function GetShippingOrderDetails(Request $request){
  function makeResponse($type,$resp){
    $data = json_decode($resp,true);
    $setResponse=array();
+   if($type=='cabify'){
+    $setResponse['id'] = $data['id'];
+   }
+   if($type=='fex'){
+    $setResponse['id'] = $data["resultado"]['servicio'];
+  }
+ 
  }
 
 //  -------------------------------------------Shipping Proof Of Delivery--------------------------------------
