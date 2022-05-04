@@ -76,6 +76,7 @@ Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
 Route::post('/FexCancellation', [FexController::class, 'PostFexCancellation']);
 
 Route::post('/FexCallback', [FexController::class, 'FexCallback']);
+Route::post('/tryShipping', [GoToShop::class, 'PostCreateDelivery']);
 
 // -----------------------------------------Gotoshop Route-------------------------------------
 

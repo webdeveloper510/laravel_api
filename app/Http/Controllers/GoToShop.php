@@ -21,8 +21,8 @@ class GoToShop extends Controller
           
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
-     
-      $key = $this->matchPrice($estimate);
+      $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
+      $key = $this->matchPrice($price_array);
      //echo $key;
       $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result']);
   }
@@ -96,18 +96,19 @@ class GoToShop extends Controller
   
 /*-----------------------------------------------------Create Shipment----------------------------------------*/
 
-  function GoToShopCreateShipment($plateform,$postData,$result){
+  function GoToShopCreateShipment($plateform,$postData,$result,$parcel_id){
+
+
 
     if($plateform=='padidosya_estimate'){
       $response = $this->CreateShippingOrder($postData);
     }
     if($plateform=='cabify'){
-      $response = $this->PostCreateDelivery($postData,$result);
+      $response = $this->PostCreateDelivery($postData,$result,$parcel_id);
     }
     if($plateform=='fex'){
       $response =  $this->FexSolicitar($postData);
     }
-
     $this->insertAndSave(json_decode($response,true),$plateform,$postData);
   }
 
@@ -339,7 +340,7 @@ if(!empty($insert_data)){
        function GetEstimate($postData){ 
       $cabify_token = $this->getTokenFromDb('cabify');
       $parcel = $this->createParcel($postData);
-      $parcel_id = $parcel['parcels'][0]['id'];        
+      $parcel_id = $parcel['parcels'][0]['id']; 
         $stops['loc'] = array();   
         $curl = curl_init();
       curl_setopt_array($curl, array(
@@ -381,7 +382,7 @@ if(!empty($insert_data)){
         );
       }
        // return  $response;
-        return ['price'=>$parcels_estimate['price_total']['amount'],'code'=>$httpcode,'result'=>$setResponse];
+        return ['price'=>$parcels_estimate['price_total']['amount'],'code'=>$httpcode,'result'=>$setResponse,'parcel_id'=>$parcel_id];
      
       }
 
@@ -565,6 +566,35 @@ if(!empty($insert_data)){
 //return $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result,$httpcode);
 //return $response;    
 
+ }
+/*---------------------------------Create Cabify Delievery-------------------------*/ 
+ function PostCreateDelivery($request_data,$cabify,$parcel_id){
+  $token = $this->getTokenFromDb('cabify');
+  $curl = curl_init();
+  curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://delivery.api.cabify-sandbox.com/v1/parcels/deliver',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'POST',
+  CURLOPT_POSTFIELDS =>'{
+        "parcel_ids":["'.$parcel_id.',"],"optimize":true,"requester_id":"280e5faa46f711ecacc0cad412eb504e"
+     }',
+  CURLOPT_HTTPHEADER => array(
+ 'Authorization: Bearer '.$token['token'],
+ 'Content-Type: application/json'
+   ),
+   ));
+
+  $response = curl_exec($curl);
+  $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+  print_r($response);die;
+  curl_close($curl);
+
+  $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result,$httpcode);
  }
 
 function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate,$code){
