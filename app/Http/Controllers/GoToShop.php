@@ -24,7 +24,7 @@ class GoToShop extends Controller
       $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
       $key = $this->matchPrice($price_array);
      //echo $key;
-      $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result']);
+      $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result'],$estimate['cabify']['parcel_id']);
   }
   function getVehicle($weight){
     if($weight<=4){
@@ -591,16 +591,15 @@ if(!empty($insert_data)){
 
   $response = curl_exec($curl);
   $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-  print_r($response);die;
   curl_close($curl);
 
-  $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result,$httpcode);
+  $this->setShippingResponseAsPadidosya($response,'cabify',$request_data,$cabify,$httpcode);
  }
 
 function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate,$code){
   $setResponse=array();
    $response = json_decode($response,true);
-   if($provider=='cabify' && $response['data']['createDelivery']['id']){
+   if($provider=='cabify'){
     $setResponse['id']=$response['data']['createDelivery']['id'];
     $setResponse['status']='PREORDER';
     $setResponse['cancelCode']='';
@@ -814,24 +813,48 @@ return $resp;
 /**-------------------------------------------Get Shipping Padidosya details------------------------------- */
 
 function GetShippingOrderDetails(Request $request){      
-        
-  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id; 
+  $token = $this->getTokenFromDb('Pedidosya');
+  $shipping = $this->getShipingFRomDatabase($request->id);
+  if($shipping['type']=='cabify'){
+    $type = 'cabify';
+    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels".$request->id;
+  }
+  if($shipping['type']=='fex'){
+    $type = 'fex';
+    $headers = array(
+      "Content-Type: application/json",
+   );
+    $url = "https://fex.cl/fex_api/externo/flete/estado?acceso=DEB454D-A086639-8CD60D0-77C&servicio=".$request->id;
+  }
+  if($shipping['type']=='Padidosya'){
+    $type = 'padidosya';
+    $headers = array(
+      "Content-Type: application/json",
+      "Authorization:".$token['token']
+   );
+
+    $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id;
+  }
+   
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    
-    $headers = array(
-       "Content-Type: application/json",
-       "Authorization:".$request->token
-    );
-
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
     
     $resp = curl_exec($curl);
     curl_close($curl);
+   $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+   if($httpcode==200 && $type!='padidosya'){
+    $this->makeResponse($type,$resp);
+   }
     return $resp;
+ }
+
+ function makeResponse($type,$resp){
+   $data = json_decode($resp,true);
+   $setResponse=array();
  }
 
 //  -------------------------------------------Shipping Proof Of Delivery--------------------------------------
@@ -1050,6 +1073,11 @@ $data = array();
 function getTokenFromDb($type){
    $auth = Authentication::where('type',$type)->orderBy('id', 'DESC')->first()->toArray();
    return $auth;
+}
+
+function getShipingFRomDatabase($shiping_id){
+  $auth = shipmentModel::where('shipping_id',$shiping_id)->first()->toArray();
+  return $auth;
 }
 
 
