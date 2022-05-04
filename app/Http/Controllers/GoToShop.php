@@ -17,13 +17,12 @@ class GoToShop extends Controller
   function GoToShopShipping(Request $request){ 
    // print_r($request->all());die;    
     $estimate = array();
-      $estimate['cabify'] =$this->GetEstimate($request->all());         
+      $estimate['cabify'] =$this->GetEstimate($request->all());   
+          
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
-      // echo "<pre>";
-      // print_r($estimate);die;
+     
       $key = $this->matchPrice($estimate);
-
      //echo $key;
       $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result']);
   }
@@ -50,10 +49,11 @@ class GoToShop extends Controller
 
     function GoToShopEstimate(Request $request){
       $response = $request->all();  
-      $estimate['cabify'] =$this->GetEstimate($request->all());         
+      $estimate['cabify'] =$this->GetEstimate($request->all());        
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
       $estimate['fex'] =$this->FexCotizer($request->all());
-      $key = $this->matchPrice($estimate);
+      $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
+      $key = $this->matchPrice($price_array);
       return $this->createEstimateWithPrice($key,$response,$estimate);  
     }
 
@@ -63,14 +63,8 @@ class GoToShop extends Controller
         unset($response['notificationMail']);
         unset($response['access_token']);
         if($provider=='cabify'){
-          $data = $estimate['cabify']['result']['data'];
-          $response['price']=array(
-            'distance'=>$data['estimates'][0]['distance'],
-            'subtotal'=>$data['estimates'][0]['total']['amount'],
-            'taxes'=>'',
-            'total'=>$data['estimates'][0]['total']['amount'],
-            'currency'=>$data['estimates'][0]['total']['currency']
-          );
+         // $data = $estimate['cabify']['result']['data'];
+          $response=$estimate['cabify']['result'];
         }
         else if($provider=='fex'){
           $data = $estimate['fex']['result']['resultado'];
@@ -86,6 +80,8 @@ class GoToShop extends Controller
         else{
           $response = $estimate['padidosya_estimate']['result'];
         }
+
+        print_r($response);die;
 
         return $response;
     }
@@ -174,11 +170,19 @@ if(!empty($insert_data)){
 
   //---------------------------------------------GoToShopAuthentication----------------------------------------- 
 
-    function GoToShopAuthentication(Request $request){   
-          $this->GetAccessToken($request->all());
+    function GoToShopAuthentication(Request $request){
+      switch ($request->type) {
+        case "Pedidosya":
           $this->getToken($request->all());
-
-            
+          break;
+        case "cabify":
+          $this->GetAccessToken($request->all());
+          break;
+        default:
+        echo json_encode(array("msg"=>"Please send valid body"));
+      }   
+          
+                     
     }
 // --------------------------------------Padidosya Authentication---------------------------------------
 
@@ -206,8 +210,6 @@ if(!empty($insert_data)){
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);    
     $resp = curl_exec($curl);
     $response = json_decode($resp,true);
-    echo "<pre>";
-    print_r($response);die;
     if($response['access_token']){
       $store = new Authentication;
       $store->client_id = $token['client_id'];
@@ -222,12 +224,14 @@ if(!empty($insert_data)){
     $response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
     curl_close($curl);
-    echo json_encode(array('response'=>$resp,'code'=>$response_code));
+    echo json_encode(array('response'=>$response,'code'=>$response_code));
  }
 
 
  /**------------------------------------------Cabify Authentication------------------------------------------------- */
  function GetAccessToken($token){
+
+  //print_r($token);die;
 
   $url = "https://cabify-sandbox.com/auth/api/authorization";
 
@@ -252,6 +256,7 @@ if(!empty($insert_data)){
   curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);  
   $resp = curl_exec($curl);
   $response = json_decode($resp,true);
+ // print_r($response);die;
   if($response['access_token']){
     $store = new Authentication;
     $store->client_id = $token['client_id'];
@@ -263,7 +268,7 @@ if(!empty($insert_data)){
     $store->token = $response['access_token'];
     $store->save();
     $auth_response['access_token'] = $response['access_token'];
-    return json_encode($auth_response);
+    echo json_encode($auth_response);
   }
   $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
   curl_close($curl);
@@ -274,7 +279,7 @@ if(!empty($insert_data)){
 //----------------------------------Padidosya Estimate------------------------------------------------------
     
     function EstimateShipping($postdata){    
-
+      $token = $this->getTokenFromDb('Pedidosya');
          $url = "https://courier-api.pedidosya.com/v1/estimates/shippings";
   
          $curl = curl_init($url);
@@ -284,7 +289,7 @@ if(!empty($insert_data)){
          
          $headers = array(
            "Content-Type: application/json",
-           "Authorization:".$postdata['access_token']
+           "Authorization:".$token['token']
         );
          curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
          
@@ -325,14 +330,16 @@ if(!empty($insert_data)){
          $resp = curl_exec($curl);
          curl_close($curl);
           $data = json_decode($resp,true);
+          //print_r($data);die;
           
-          return [$data['price']['total'],'result'=>$data];
+          return ['price'=>$data['price']['total'],'result'=>$data];
        }
 // -------------------------------------------Cabify Estimate-----------------------------------------------
 
        function GetEstimate($postData){ 
-        $parcel = $this->createParcel($postData);
-        die;
+      $cabify_token = $this->getTokenFromDb('cabify');
+      $parcel = $this->createParcel($postData);
+      $parcel_id = $parcel['parcels'][0]['id'];        
         $stops['loc'] = array();   
         $curl = curl_init();
       curl_setopt_array($curl, array(
@@ -345,27 +352,42 @@ if(!empty($insert_data)){
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => 'POST',
       CURLOPT_POSTFIELDS =>'{
-            "parcel_ids":["8668d5d5-fc0e-4002-ac95-3ad8fa04d644"]
+            "parcel_ids":["'.$parcel_id.'"]
          }',
       CURLOPT_HTTPHEADER => array(
-     'Authorization: Bearer UJERz57jHZWUYiJCyWo878FjzUdY0o',
+     'Authorization: Bearer '.$cabify_token['token'],
      'Content-Type: application/json'
        ),
        ));
 
       $response = curl_exec($curl);
-
+      $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
       curl_close($curl);
-      echo $response;
+      $parcels_estimate = json_decode($response,true);
+      if($httpcode==200){
+        $setResponse=array();
+        $setResponse['referenceId']=$postData['referenceId'];
+        $setResponse['deliveryTime']=$postData['deliveryTime'];
+        $setResponse['volume']=$postData['volume'];
+        $setResponse['weight']=$postData['weight'];
+        $setResponse['items']=$postData['items'];
+        $setResponse['waypoints']=$postData['waypoints'];
+        $setResponse['price']=array(
+          'distance'=>'',
+          'subtotal'=>$parcels_estimate['price_total']['amount'],
+          'taxes'=>'',
+          'total'=>$parcels_estimate['price_total']['amount'],
+          'currency'=>$parcels_estimate['price_total']['currency'],
+        );
+      }
        // return  $response;
-        return [$response['data']['estimates'][0]['total']['amount'],'result'=>$response];
+        return ['price'=>$parcels_estimate['price_total']['amount'],'code'=>$httpcode,'result'=>$setResponse];
      
       }
 
 // --------------------------------------------Fex Estimate-------------------------------------
       
-    function FexCotizer($request){;
-      
+    function FexCotizer($request){      
       $url = "https://fex.cl/fex_api/externo/flete/cotizar";
 
       $curl = curl_init($url);
@@ -380,23 +402,28 @@ if(!empty($insert_data)){
       
       $data = array();
     $data['acceso'] ="DEB454D-A086639-8CD60D0-77C";
-    $data['ori_lat'] =$request['waypoints'][0]['latitude'];
-    $data['ori_lng'] =$request['waypoints'][0]['longitude'];
-    $data['des_lat'] =$request['waypoints'][1]['latitude'];
-    $data['des_lng'] =$request['waypoints'][1]['longitude'];
+    $data['ori_lat'] =-33.553788;
+    $data['ori_lng'] =-70.656825;
+    $data['des_lat'] =-33.447811;
+    $data['des_lng'] =-70.597801;
     $data['vehiculo'] = $this->getVehicle($request['weight']);
-    $data['reg_origen'] =0;
-      
+    $data['reg_origen'] =0;      
       curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
       curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       
       $resp = curl_exec($curl); 
       $response = json_decode($resp,true);
-     // print_r($response);
+      $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+      if($httpcode==200){
+        return ['price'=>$response['resultado']['total'],'result'=>$response];
+      }
+     
      //return $resp;
       curl_close($curl);
-     return [$response['resultado']['total'],'result'=>$response];
+
+      echo $resp;
+   
 
     }
 
@@ -463,23 +490,51 @@ if(!empty($insert_data)){
     
   // --------------------------------------------Cabify Shipping---------------------------------------------
 
-  function createParcel($shipping){
-    // echo "<pre>";
-    // print_r($shipping);die;
+  function createParcel($shipping){    
+    $SixDigitRandomNumber = rand(100000,999999);
     $data = array();
+    $final_array=[];
     $name = $shipping['waypoints'][0]['name'];
     $phone = $shipping['waypoints'][0]['phone'];
     $lat = $shipping['waypoints'][0]['latitude'];
     $lon = $shipping['waypoints'][0]['longitude'];
     $addr = $shipping['waypoints'][0]['addressStreet'];
     $instr = $shipping['waypoints'][0]['instructions'];
-    $phone = $shipping['waypoints'][1]['phone'];
+    $phone1 = $shipping['waypoints'][1]['phone'];
     $name1 = $shipping['waypoints'][1]['name'];
     $latitude = $shipping['waypoints'][1]['latitude'];
     $longitude = $shipping['waypoints'][1]['longitude'];
     $addressStreet = $shipping['waypoints'][1]['addressStreet'];
     $instructions = $shipping['waypoints'][1]['instructions'];
-
+    $parcels=array(
+      'external_id'=>'parcel_'.$SixDigitRandomNumber,
+      'pickup_info'=>array(
+      'contact'=>array(
+        'name'=>$name,
+        'phone'=>$phone
+      ),
+      'loc'=>array(
+        'lat'=>$lat,
+        'lon'=>$lon,
+      ),
+      'addr'=>$addr
+      ),
+      'dropoff_info'=>array(
+        'contact'=>array(
+          'name'=>$name1,
+          'phone'=>$phone1
+        ),
+        'loc'=>array(
+          'lat'=>$latitude,
+          'lon'=>$longitude,
+        ),
+        'addr'=>$addressStreet
+      )
+      );
+     $parcel = json_encode($parcels,true);
+     $data = '{"parcels": ['.$parcel.']}';
+     //print_r($data);die;
+    $final_array['parcels'] = json_encode($parcels);
      $curl = curl_init();
      curl_setopt_array($curl, array(
        CURLOPT_URL => 'https://delivery.api.cabify-sandbox.com/v1/parcels',
@@ -490,16 +545,10 @@ if(!empty($insert_data)){
        CURLOPT_FOLLOWLOCATION => true,
        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
        CURLOPT_CUSTOMREQUEST => 'POST',
-       CURLOPT_POSTFIELDS =>'{
-         "parcels":[{
-             "pickup_info":{"contact":{"name":'.$name.',"phone":'.$phone.'},"loc":{"lat":'.$lat.',"lon":'.$lon.'},"addr":'.$addr.',"instr":'.$instr.'},
-             "dropoff_info":{"contact":{"phone":'.$phone.',"name":'.$name.'},"loc":{"lat":'.$latitude.',"lon":'.$longitude.'},"addr":'.$addressStreet.',"instr":'.$instructions.'},"external_id":"1654694544"
-
-             }]
-             }',
+       CURLOPT_POSTFIELDS =>$data,
        CURLOPT_HTTPHEADER => array(
          'Content-Type: application/json',
-         "Authorization: Bearer _2l9k2KyagXMoipuKVhYOF-Izgebus"
+         "Authorization: Bearer 4nATLA-TlunUbXH8qWfBPZI2-XlyQ_"
        ),
      ));
      
@@ -507,10 +556,11 @@ if(!empty($insert_data)){
      $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
      curl_close($curl);
-     echo "<pre>";
-     echo $httpcode;
-     print_r($response);die;
-     echo $response;
+     if($httpcode==200){
+       $parcel_response = json_decode($response,true);
+        return $parcel_response;
+      }  
+      echo $response;
      
 //return $this->setShippingResponseAsPadidosya($response,'cabify',$shipping,$result,$httpcode);
 //return $response;    
@@ -965,8 +1015,11 @@ $data = array();
   $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
   curl_close($curl);
   return array('code'=>$httpcode,'response'=>$resp); 
+}
 
-
+function getTokenFromDb($type){
+   $auth = Authentication::where('type',$type)->orderBy('id', 'DESC')->first()->toArray();
+   return $auth;
 }
 
 
