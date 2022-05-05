@@ -847,19 +847,51 @@ function GetShippingOrderDetails(Request $request){
     curl_close($curl);
    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
    if($httpcode==200 && $type!='padidosya'){
-    $this->makeResponse($type,$resp);
+    $this->makeResponse($type,$resp,$shipping);
    }
     return $resp;
  }
 
- function makeResponse($type,$resp){
+ function makeResponse($type,$resp,$database_data){
    $data = json_decode($resp,true);
    $setResponse=array();
    if($type=='cabify'){
     $setResponse['id'] = $data['id'];
+    $setResponse['referenceId'] = 'Client Internal Reference';
+    $setResponse['status'] = 'PREORDER';
+    $setResponse['isTest'] = 'true';
+    $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
+    $setResponse['items'] = $database_data['items'];
+    $setResponse['weight'] = "20";
+    $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
+    $setResponse['createdAt'] = '2020-07-21T12:00:32Z';
+    $setResponse['volume'] = '20.02';
+    $setResponse['price'] = array(
+      'distance'=>'2345',
+      'subtotal'=>'184.85',
+      'taxes'=>'5.15',
+      'total'=>'2345',
+      'currency'=>'UYU'
+    );
    }
    if($type=='fex'){
     $setResponse['id'] = $data["resultado"]['servicio'];
+    $setResponse['referenceId'] = 'Client Internal Reference';
+    $setResponse['status'] = 'PREORDER';
+    $setResponse['isTest'] = 'true';
+    $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
+    $setResponse['items'] = $database_data['items'];
+    $setResponse['weight'] = "20";
+    $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
+    $setResponse['createdAt'] = '2020-07-21T12:00:32Z';
+    $setResponse['volume'] = '20.02';
+    $setResponse['price'] = array(
+      'distance'=>'2345',
+      'subtotal'=>'184.85',
+      'taxes'=>'5.15',
+      'total'=>'2345',
+      'currency'=>'UYU'
+    );
   }
  
  }
