@@ -893,16 +893,19 @@ function GetShippingOrderDetails(Request $request){
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $resp = curl_exec($curl);
-    curl_close($curl);
-   
+    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-   print_r($resp);die;
+    curl_close($curl);  
 
    if($httpcode==200 && $type!='padidosya'){
-    $this->makeResponse($type,$resp,$shipping);
+
+    $data = $this->makeResponse($type,$resp,$shipping);
+     return $data;
+
    }
+
+   else
     return $resp;
  }
 
@@ -915,6 +918,7 @@ function GetShippingOrderDetails(Request $request){
     $setResponse['status'] = 'PREORDER';
     $setResponse['isTest'] = 'true';
     $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
+    $setResponse['waypoints'] = $database_data['waypoints'];
     $setResponse['items'] = $database_data['items'];
     $setResponse['weight'] = "20";
     $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
@@ -935,6 +939,7 @@ function GetShippingOrderDetails(Request $request){
     $setResponse['isTest'] = 'true';
     $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
     $setResponse['items'] = $database_data['items'];
+    $setResponse['waypoints'] = $database_data['waypoints'];
     $setResponse['weight'] = "20";
     $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
     $setResponse['createdAt'] = '2020-07-21T12:00:32Z';
@@ -947,6 +952,7 @@ function GetShippingOrderDetails(Request $request){
       'currency'=>'UYU'
     );
   }
+     return $setResponse;
  
  }
 
