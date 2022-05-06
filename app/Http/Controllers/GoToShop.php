@@ -491,7 +491,8 @@ if(!empty($insert_data)){
     
   // --------------------------------------------Cabify Shipping---------------------------------------------
 
-  function createParcel($shipping){    
+  function createParcel($shipping){   
+    $cabify_token = $this->getTokenFromDb('cabify');
     $SixDigitRandomNumber = rand(100000,999999);
     $data = array();
     $final_array=[];
@@ -549,7 +550,7 @@ if(!empty($insert_data)){
        CURLOPT_POSTFIELDS =>$data,
        CURLOPT_HTTPHEADER => array(
          'Content-Type: application/json',
-         "Authorization: Bearer 4nATLA-TlunUbXH8qWfBPZI2-XlyQ_"
+         "Authorization: Bearer" .$cabify_token['token']
        ),
      ));
      
@@ -1110,6 +1111,7 @@ $data = array();
 }
 
 function getTokenFromDb($type){
+  //GetAccessToken();
    $auth = Authentication::where('type',$type)->orderBy('id', 'DESC')->first()->toArray();
    return $auth;
 }
