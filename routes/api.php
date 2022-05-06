@@ -89,3 +89,8 @@ Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
 Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
 
 Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
+
+Route::get('/FexDelieveryDetail', [GoToShop::class, 'GoToShopFexDelieveryDetail']);
+
+
+

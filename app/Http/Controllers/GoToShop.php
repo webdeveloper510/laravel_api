@@ -47,6 +47,7 @@ class GoToShop extends Controller
   // ----------------------------------------------GoToShop Estimate-------------------------------------------
 
     function GoToShopEstimate(Request $request){
+
       $response = $request->all();  
       $estimate['cabify'] =$this->GetEstimate($request->all());        
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
@@ -283,7 +284,7 @@ if(!empty($insert_data)){
 //----------------------------------Padidosya Estimate------------------------------------------------------
     
     function EstimateShipping($postdata){    
-      $token = $this->getTokenFromDb('Pedidosya');
+          $token = $this->getTokenFromDb('Pedidosya');
          $url = "https://courier-api.pedidosya.com/v1/estimates/shippings";
   
          $curl = curl_init($url);
@@ -334,13 +335,11 @@ if(!empty($insert_data)){
          $resp = curl_exec($curl);
          curl_close($curl);
           $data = json_decode($resp,true);
-          //print_r($data);die;
           
           return ['price'=>$data['price']['total'],'result'=>$data];
        }
 // -------------------------------------------Cabify Estimate-----------------------------------------------
-
-       function GetEstimate($postData){ 
+  function GetEstimate($postData){ 
       $cabify_token = $this->getTokenFromDb('cabify');
       $parcel = $this->createParcel($postData);
       $parcel_id = $parcel['parcels'][0]['id']; 
@@ -436,7 +435,7 @@ if(!empty($insert_data)){
 
     
   function CreateShippingOrder($shipping){    
-
+    $shipping = $this->getTokenFromDb('Pedidosya');
     $url = "https://courier-api.pedidosya.com/v1/shippings";      
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -496,6 +495,7 @@ if(!empty($insert_data)){
 
   function createParcel($shipping){   
     $cabify_token = $this->getTokenFromDb('cabify');
+  //  print_r($cabify_token);die;
     $SixDigitRandomNumber = rand(100000,999999);
     $data = array();
     $final_array=[];
@@ -553,7 +553,7 @@ if(!empty($insert_data)){
        CURLOPT_POSTFIELDS =>$data,
        CURLOPT_HTTPHEADER => array(
          'Content-Type: application/json',
-         "Authorization: Bearer" .$cabify_token['token']
+         "Authorization: Bearer ".$cabify_token['token']
        ),
      ));
      
@@ -572,6 +572,7 @@ if(!empty($insert_data)){
 
  }
 /*---------------------------------Create Cabify Delievery-------------------------*/ 
+
  function PostCreateDelivery($request_data,$cabify,$parcel_id){
  // echo $parcel_id;die;
   $token = $this->getTokenFromDb('cabify');
@@ -612,7 +613,7 @@ if(!empty($insert_data)){
   
  }
 
- /**----------------------------Get Parcel BY id-------------------------------- */
+ /**-----------------------------------------Get Parcel BY id-------------------------------------- */
 
  function getParcelByid($parcel_id){
   $token = $this->getTokenFromDb('cabify');
@@ -856,11 +857,16 @@ return $resp;
 /**-------------------------------------------Get Shipping Padidosya details------------------------------- */
 
 function GetShippingOrderDetails(Request $request){      
-  $token = $this->getTokenFromDb('Pedidosya');
   $shipping = $this->getShipingFRomDatabase($request->id);
   if($shipping['type']=='cabify'){
+     $token = $this->getTokenFromDb('cabify');
     $type = 'cabify';
-    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels".$request->id;
+    
+    $headers = array(
+      "Content-Type: application/json",
+      'Authorization: Bearer '.$token['token']
+   );
+    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/".$request->id;
   }
   if($shipping['type']=='fex'){
     $type = 'fex';
@@ -871,6 +877,8 @@ function GetShippingOrderDetails(Request $request){
   }
   if($shipping['type']=='Padidosya'){
     $type = 'padidosya';
+    $token = $this->getTokenFromDb('Pedidosya');
+
     $headers = array(
       "Content-Type: application/json",
       "Authorization:".$token['token']
@@ -885,10 +893,13 @@ function GetShippingOrderDetails(Request $request){
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    
+    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $resp = curl_exec($curl);
     curl_close($curl);
-   $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+   
+
+   print_r($resp);die;
+
    if($httpcode==200 && $type!='padidosya'){
     $this->makeResponse($type,$resp,$shipping);
    }
@@ -991,9 +1002,41 @@ function GetShippingOrderDetails(Request $request){
     echo $response;  
   }
 
-  function FexDelieveryDetail(Request $request){
 
+
+  //----------------------------------------- Delivery Fex Detail---------------------------------------------------
+
+  function GoToShopFexDelieveryDetail(Request $request){
+   echo "<pre>";
+   print_r($request);die;
+    $token = $this->getTokenFromDb('cabify');
+  $curl = curl_init();
+  curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://fex.cl/fex_api/externo/flete/estado?acceso=?&servicio'.$request->id,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'GET',
+  CURLOPT_HTTPHEADER => array(
+ 'Authorization: Bearer '.$token['token'],
+ 'Content-Type: application/json'
+   ),
+   ));
+
+  $response = curl_exec($curl);
+ 
+  $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+  curl_close($curl);
+  return $this->setShippingResponseAsPadidosya($resp,'fex',$shipping,'',$httpcode);
   }
+
+  
+
+
+
 
   //---------------------------------------------Padidosya Create Callback-----------------------------------------------
 
@@ -1162,6 +1205,5 @@ function getShipingFRomDatabase($shiping_id){
   $auth = shipmentModel::where('shipping_id',$shiping_id)->first()->toArray();
   return $auth;
 }
-
 
 }
