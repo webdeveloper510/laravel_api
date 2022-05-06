@@ -28,4 +28,8 @@ class adminController extends Controller
             return $resp;         
 
     }
+    
+    function checkStatus(){
+        echo "testing";
+    }
 }

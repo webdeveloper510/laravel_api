@@ -1114,6 +1114,10 @@ function getTokenFromDb($type){
    return $auth;
 }
 
+function GoToShopTest(){
+    echo "yesss";
+}
+
 function getShipingFRomDatabase($shiping_id){
   $auth = shipmentModel::where('shipping_id',$shiping_id)->first()->toArray();
   return $auth;

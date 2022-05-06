@@ -82,6 +82,8 @@ Route::post('/tryShipping', [GoToShop::class, 'PostCreateDelivery']);
 
 Route::post('/shipping', [GoToShop::class, 'GoToShopShipping']);
 
+//Route::post('/test', [GoToShop::class, 'GoToShopTest']);
+
 Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
 
 Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
@@ -89,3 +91,5 @@ Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
 Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
 
 Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
+
+
