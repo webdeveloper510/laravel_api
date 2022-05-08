@@ -88,7 +88,9 @@ Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
 
 Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
 
-Route::post('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
+Route::get('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
+
+Route::get('/ShippingOrderTracking', [GoToShop::class, 'GoToShopShippingOrderTracking']);
 
 Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
 
