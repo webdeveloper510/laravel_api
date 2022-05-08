@@ -335,6 +335,7 @@ if(!empty($insert_data)){
          $resp = curl_exec($curl);
          curl_close($curl);
           $data = json_decode($resp,true);
+      
           
           return ['price'=>$data['price']['total'],'result'=>$data];
        }
@@ -1213,6 +1214,7 @@ function GoToShopTest(){
 
 function getShipingFRomDatabase($shiping_id){
   $auth = shipmentModel::where('shipping_id',$shiping_id)->first()->toArray();
+ // print_r($auth);die;
   return $auth;
 }
 
