@@ -909,6 +909,66 @@ function GetShippingOrderDetails(Request $request){
     return $resp;
  }
 
+
+ /**  -------------------------------------Cancellation Api----------------------------------- */
+
+ function GoToShopCancellation(Request $request){      
+  $shipping = $this->getShipingFRomDatabase($request->id);
+  if($shipping['type']=='cabify'){
+     $token = $this->getTokenFromDb('cabify');
+      $type = 'cabify';     
+      $headers = array(
+        "Content-Type: application/json",
+        'Authorization: Bearer '.$token['token']
+    );
+   $request['reasonText'] = "Testing Cancellation";
+    $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
+  }
+  if($shipping['type']=='fex'){
+    $type = 'fex';
+    $headers = array(
+      "Content-Type: application/json",
+   );
+   $request['acceso'] = "Testing Cancellation";
+   $request['servicio'] = $request->id;;
+   $request['estado'] = 3;
+    $url = "https://fex.cl/fex_api/fex_api/externo/flete/cambiar_estado";
+  }
+  if($shipping['type']=='Padidosya'){
+    $type = 'padidosya';
+    $token = $this->getTokenFromDb('Pedidosya');
+
+    $headers = array(
+      "Content-Type: application/json",
+      "Authorization:".$token['token']
+   );
+   $request['reasonText'] = "Testing Cancellation";
+    $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
+  }
+   
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);  
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($request));       
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    $resp = curl_exec($curl);
+    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+    curl_close($curl);  
+
+   if($httpcode==200 && $type!='padidosya'){
+    $data = $this->makeResponse($type,$resp,$shipping);
+     return $data;
+
+   }
+
+   else
+    return $resp;
+ }
+
+
  function makeResponse($type,$resp,$database_data){
    $data = json_decode($resp,true);
    $setResponse=array();
@@ -979,6 +1039,54 @@ function GetShippingOrderDetails(Request $request){
             return $resp;
          }
 
+// --------------------------------------Shipping Oerder Tracking---------------------------------------------
+
+function GetShippingOrderTracking(Request $request){
+  // print_r($request->all());die;
+  $authrise = $this->getTokenFromDb('Pedidosya');
+ $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/tracking";      
+
+ $curl = curl_init($url);
+ curl_setopt($curl, CURLOPT_URL, $url);
+ curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+ 
+ $headers = array(
+    "Content-Type: application/json",
+    "Authorization:".$authrise['token']
+ );
+ 
+ curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                       
+ curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+ curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+ 
+ $resp = curl_exec($curl);
+ curl_close($curl);
+ return $resp;
+}
+
+// ------------------------------------------Shipping Proof Of Delivery---------------------------------------
+
+function GoToShopProofOfDelivery(Request $request){
+  $authrise = $this->getTokenFromDb('Pedidosya');
+ $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";      
+
+ $curl = curl_init($url);
+ curl_setopt($curl, CURLOPT_URL, $url);
+ curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+ 
+ $headers = array(
+    "Content-Type: application/json",
+    "Authorization:".$authrise['token']
+ );
+ 
+ curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                       
+ curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+ curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+ 
+ $resp = curl_exec($curl);
+ curl_close($curl);
+ return $resp;
+}
 
 // ---------------------------------------------Get Delivery Cabify details------------------------------------
 

@@ -173,8 +173,6 @@ class pedidosyaApiController extends Controller
      }
 
 
-
-
 //---------------------------------------------Estimate Shipping Order---------------------------------------------    
 
       function EstimateShipping(Request $request){
