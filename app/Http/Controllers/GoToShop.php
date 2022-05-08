@@ -1041,7 +1041,7 @@ function GetShippingOrderDetails(Request $request){
 
 // --------------------------------------Shipping Oerder Tracking---------------------------------------------
 
-function GetShippingOrderTracking(Request $request){
+function GoToShopShippingOrderTracking(Request $request){
   // print_r($request->all());die;
   $authrise = $this->getTokenFromDb('Pedidosya');
  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/tracking";      
