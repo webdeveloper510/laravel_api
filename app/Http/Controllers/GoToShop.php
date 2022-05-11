@@ -1217,8 +1217,6 @@ function GoToShopProofOfDelivery(Request $request){
   //----------------------------------------- Delivery Fex Detail---------------------------------------------------
 
   function GoToShopFexDelieveryDetail(Request $request){
-   echo "<pre>";
-   print_r($request);die;
     $token = $this->getTokenFromDb('cabify');
   $curl = curl_init();
   curl_setopt_array($curl, array(
@@ -1430,32 +1428,45 @@ function JwtAuthenticate(Request $request){
         return response()->json($validator->errors()->json(),400);
     }
 
-  //   $token = Str::random(32);
-   $user =  User::create([
-      'name'=>$request->name,
-      'email'=>$request->email,
-       'password'=>$request->password,
-      ]);
-    try {
-        if (! $token = JWTAuth::attempt($credentials)) {
-            return response()->json([
-              'success' => false,
-              'message' => 'Login credentials are invalid.',
-            ], 400);
-        }
-    } catch (JWTException $e) {
-  return $credentials;
-        return response()->json([
-              'success' => false,
-              'message' => 'Could not create token.',
-            ], 500);
-    }
 
  //Token created, return with success response and jwt token
-    return response()->json([
-        'success' => true,
-        'token' => $token,
+    $token = Str::random(32);
+    $user = User::create([
+      'name' => $request->get('name'),
+      'email' =>$request->get('email'),
+      'password' =>$request->get('password'),
+      'remember_token'=>$token
     ]);
+    return response()->json([
+             'success' => true,
+              'token' => $token,
+           ]);
+    //Send failed response if request is not valid
+//     if ($validator->fails()) {
+//         return response()->json($validator->errors()->json(),400);
+//     }
+
+//   //   $token = Str::random(32);
+//     try {
+//         if (! $token = JWTAuth::attempt($credentials)) {
+//             return response()->json([
+//               'success' => false,
+//               'message' => 'Login credentials are invalid.',
+//             ], 400);
+//         }
+//     } catch (JWTException $e) {
+//   return $credentials;
+//         return response()->json([
+//               'success' => false,
+//               'message' => 'Could not create token.',
+//             ], 500);
+//     }
+
+//  //Token created, return with success response and jwt token
+//     return response()->json([
+//         'success' => true,
+//         'token' => $token,
+//     ]);
 }
 
 protected function respondWithToken($token)

@@ -21,6 +21,22 @@ class JwtMiddleware extends BaseMiddleware
      */
     public function handle($request, Closure $next)
     {
+        if ( $this->checkToken( $request ) ) {
+            return $next( $request );
+        }
+
+        return response()->json( [ 'error' => 'Unauthorized' ], 403 );
+
+
+    }
+
+    public function checkToken( $request ) {
+
+        //$client = $request->header( 'client' );
+        $token  = $request->header( 'token' );
+        $checkToken = User::where( 'remember_token', $token)->first();
+        return $checkToken;
+    }
 
         // try {
         //     $user = JWTAuth::parseToken()->authenticate();
@@ -33,6 +49,5 @@ class JwtMiddleware extends BaseMiddleware
         //         return response()->json(['status' => 'Authorization Token not found']);
         //     }
         // }
-        return $next($request);
-    }
+    
 }
