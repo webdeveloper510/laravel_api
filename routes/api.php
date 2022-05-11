@@ -2,6 +2,7 @@
 use App\Http\Controllers\pedidosyaApiController;
 use App\Http\Controllers\cabifyController;
 use App\Http\Controllers\FexController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\GoToShop;
 
 use App\Http\Controllers\adminController;
@@ -76,25 +77,30 @@ Route::post('/FexShipping', [FexController::class, 'FexSolicitar']);
 Route::post('/FexCancellation', [FexController::class, 'PostFexCancellation']);
 
 Route::post('/FexCallback', [FexController::class, 'FexCallback']);
+
 Route::post('/tryShipping', [GoToShop::class, 'PostCreateDelivery']);
 
 // -----------------------------------------Gotoshop Route-------------------------------------
+Route::controller(UserController::class)->group(function () {
+    Route::post('login', 'login');
+    Route::post('register', 'register');
+});
+Route::post('/login', [GoToShop::class, 'JwtAuthenticate']);
 
+Route::group(['middleware' => ['jwt.verify']], function() {
 Route::post('/shipping', [GoToShop::class, 'GoToShopShipping']);
 
 Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
 
 Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
 
-Route::get('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
+Route::post('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
 
-Route::get('/ShippingOrderTracking', [GoToShop::class, 'GoToShopShippingOrderTracking']);
+Route::post('/ShippingOrderTracking', [GoToShop::class, 'GoToShopShippingOrderTracking']);
 
 Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
 
 Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
-
-Route::get('/FexDelieveryDetail', [GoToShop::class, 'GoToShopFexDelieveryDetail']);
-
+});
 
 
