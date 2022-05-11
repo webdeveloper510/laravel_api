@@ -3,16 +3,61 @@
 namespace App\Http\Controllers;
 use App\Models\Authentication;
 use App\Models\shipmentModel;
-
-
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
-class GoToShop extends Controller
+use Illuminate\Support\Facades\Validator;
+use JWTAuth;
+use JWT;
+use Tymon\JWTAuthExceptions\JWTException;
+use Tymon\JWTAuth\Contracts\JWTSubject as JWTSubject;
+class GoToShop extends Controller 
 {
-  public function __construct()
-  {
-
+  public function __construct(){
   }
+
+  // public function register(Request $rtequest){
+  //   $validator=validator::make($request->all(),[
+  //     'email'=>'required|string|email|unique:users',
+  //     'password'=>'required|string|confirmed|min:6'
+  //   ]);
+  //   if($validator->fails()){
+  //     return response()->json($validator->errors()->tojson(),400);
+  //   }
+  //   $user = user::create(array_merge(
+  //     $validator->validated(),
+  //     ['password'=>abcd($request->password)]
+  //   ));
+  //   return response()->json([
+  //     'message'=>'user successfully registered',
+  //     'user'=>$user
+  //   ],201);
+  // }
+
+  // public function login(Request $request){
+  //   $validator=validator::make($request->all(),[
+  //     'email'=>'required|email',
+  //     'password'=>'required|string|min:6'
+  //   ]);
+  //   if($validator->fails()){
+  //     return response()->json($validator->errors(),422);
+  // }
+  //   if(!$token=auth()->attempt( $validator->validated())){
+  //     return response()->json(['error'=>'Unauthorized',422]);
+  //   }
+  //   return $this->CreateNewToken($token);
+  // }
+  // public function CreateNewToken($token){
+
+  //   return response()->json([
+  //     'access_token'=>$token,
+  //     'expires_in'=>auth()->factory()->getTTL()*60,
+  //     'user'=>auth()->user()
+  //   ]);
+
+  // }
 
   function GoToShopShipping(Request $request){ 
    // print_r($request->all());die;    
@@ -923,8 +968,9 @@ function GetShippingOrderDetails(Request $request){
         "Content-Type: application/json",
         'Authorization: Bearer '.$token['token']
     );
-   $request['reasonText'] = "Testing Cancellation";
-    $url ="https://delivery.api.cabify-sandbox.com/v1/parcels/".$request->id;
+
+ 
+    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/".$request->id;
   }
   if($shipping['type']=='fex'){
     $type = 'fex';
@@ -961,7 +1007,7 @@ function GetShippingOrderDetails(Request $request){
     curl_close($curl);  
 
    if($httpcode==200 && $type!='padidosya'){
-    $data = $this->makeResponse($type,$resp,$shipping);
+    $data = $this->cancelResponse($type,$resp,$shipping);
      return $data;
 
    }
@@ -970,6 +1016,54 @@ function GetShippingOrderDetails(Request $request){
     return $resp;
  }
 
+ function cancelResponse($type,$resp,$database_data){
+  $data = json_decode($resp,true);
+  $setResponse=array();
+  if($type=='cabify'){
+   $setResponse['id'] = $data['id'];
+   $setResponse['status'] = 'PREORDER';
+   $setResponse['cancelCode'] = 'CONTENT_WRONG_RIDER';
+   $setResponse['cancelReason'] = 'Producto despachado no es correcto';
+   $setResponse['referenceId'] = 'Client Internal Reference';
+   $setResponse['isTest'] = 'true';
+   $setResponse['deliveryTime'] = "2020-06-05T19:00:00Z";
+   $setResponse['lastUpdated'] = "2022-04-05T19:00:00Z";
+   $setResponse['createdAt'] = "2020-06-24T19:00:00Z";
+   $setResponse['volume'] = '20.02';
+   $setResponse['weight'] = "20";
+   $setResponse['waypoints'] = $database_data['waypoints'];
+   $setResponse['items'] = $database_data['items'];
+   $setResponse['price'] = array(
+     'distance'=>'2345',
+     'subtotal'=>'184.85',
+     'taxes'=>'5.15',
+     'total'=>'2345',
+     'currency'=>'UYU'
+   );
+  }
+  if($type=='fex'){
+   $setResponse['id'] = $data["resultado"]['servicio'];
+   $setResponse['referenceId'] = 'Client Internal Reference';
+   $setResponse['status'] = 'PREORDER';
+   $setResponse['isTest'] = 'true';
+   $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
+   $setResponse['items'] = $database_data['items'];
+   $setResponse['waypoints'] = $database_data['waypoints'];
+   $setResponse['weight'] = "20";
+   $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
+   $setResponse['createdAt'] = '2020-07-21T12:00:32Z';
+   $setResponse['volume'] = '20.02';
+   $setResponse['price'] = array(
+     'distance'=>'2345',
+     'subtotal'=>'184.85',
+     'taxes'=>'5.15',
+     'total'=>'2345',
+     'currency'=>'UYU'
+   );
+ }
+    return $setResponse;
+
+}
 
  function makeResponse($type,$resp,$database_data){
    $data = json_decode($resp,true);
@@ -1022,6 +1116,7 @@ function GetShippingOrderDetails(Request $request){
 
       function ShippingProofOfDelivery(Request $request){
        $authrise = $this->getTokenFromDb('Pedidosya');
+
           $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";
             $curl = curl_init($url);
             curl_setopt($curl, CURLOPT_URL, $url);
@@ -1320,6 +1415,56 @@ function getShipingFRomDatabase($shiping_id){
   $auth = shipmentModel::where('shipping_id',$shiping_id)->first()->toArray();
  // print_r($auth);die;
   return $auth;
+}
+
+function JwtAuthenticate(Request $request){
+    $credentials = $request->only('email', 'password');
+    //valid credential
+    $validator = Validator::make($credentials, [
+        'email' => 'required|email',    
+        'password' => 'required|string|min:6|max:50'
+    ]);
+
+    //Send failed response if request is not valid
+    if ($validator->fails()) {
+        return response()->json($validator->errors()->json(),400);
+    }
+
+  //   $token = Str::random(32);
+   $user =  User::create([
+      'name'=>$request->name,
+      'email'=>$request->email,
+       'password'=>$request->password,
+      ]);
+    try {
+        if (! $token = JWTAuth::attempt($credentials)) {
+            return response()->json([
+              'success' => false,
+              'message' => 'Login credentials are invalid.',
+            ], 400);
+        }
+    } catch (JWTException $e) {
+  return $credentials;
+        return response()->json([
+              'success' => false,
+              'message' => 'Could not create token.',
+            ], 500);
+    }
+
+ //Token created, return with success response and jwt token
+    return response()->json([
+        'success' => true,
+        'token' => $token,
+    ]);
+}
+
+protected function respondWithToken($token)
+{
+    return response()->json([
+        'access_token' => $token,
+        'token_type' => 'bearer',
+        'expires_in' => auth()->factory()->getTTL() * 60
+    ]);
 }
 
 }
