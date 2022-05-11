@@ -913,8 +913,9 @@ function GetShippingOrderDetails(Request $request){
 
  /**  -------------------------------------Cancellation Api----------------------------------- */
 
- function GoToShopCancellation(Request $request){      
+ function GoToShopCancellation(Request $request){   
   $shipping = $this->getShipingFRomDatabase($request->id);
+   // print_r($shipping);die;
   if($shipping['type']=='cabify'){
      $token = $this->getTokenFromDb('cabify');
       $type = 'cabify';     
@@ -923,7 +924,7 @@ function GetShippingOrderDetails(Request $request){
         'Authorization: Bearer '.$token['token']
     );
    $request['reasonText'] = "Testing Cancellation";
-    $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
+    $url ="https://delivery.api.cabify-sandbox.com/v1/parcels/".$request->id;
   }
   if($shipping['type']=='fex'){
     $type = 'fex';
@@ -1020,7 +1021,7 @@ function GetShippingOrderDetails(Request $request){
 //  -------------------------------------------Shipping Proof Of Delivery--------------------------------------
 
       function ShippingProofOfDelivery(Request $request){
-       
+       $authrise = $this->getTokenFromDb('Pedidosya');
           $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";
             $curl = curl_init($url);
             curl_setopt($curl, CURLOPT_URL, $url);
@@ -1028,7 +1029,7 @@ function GetShippingOrderDetails(Request $request){
             
             $headers = array(
                "Content-Type: application/json",
-               "Authorization:".$request->token
+               "Authorization:".$authrise['token']
             );
         
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
@@ -1070,7 +1071,6 @@ function GoToShopShippingOrderTracking(Request $request){
 function GoToShopProofOfDelivery(Request $request){
   $authrise = $this->getTokenFromDb('Pedidosya');
  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";      
-
  $curl = curl_init($url);
  curl_setopt($curl, CURLOPT_URL, $url);
  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -1314,10 +1314,6 @@ function getTokenFromDb($type){
   //GetAccessToken();
    $auth = Authentication::where('type',$type)->orderBy('id', 'DESC')->first()->toArray();
    return $auth;
-}
-
-function GoToShopTest(){
-    echo "yesss";
 }
 
 function getShipingFRomDatabase($shiping_id){
