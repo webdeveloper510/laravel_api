@@ -90,6 +90,8 @@ Route::post('/login', [GoToShop::class, 'JwtAuthenticate']);
 Route::group(['middleware' => ['jwt.verify']], function() {
 Route::post('/shipping', [GoToShop::class, 'GoToShopShipping']);
 
+//Route::post('/test', [GoToShop::class, 'GoToShopTest']);
+
 Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
 
 Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);

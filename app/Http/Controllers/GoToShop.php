@@ -386,6 +386,7 @@ if(!empty($insert_data)){
          $resp = curl_exec($curl);
          curl_close($curl);
           $data = json_decode($resp,true);
+      
           
           return ['price'=>$data['price']['total'],'result'=>$data];
        }
@@ -963,9 +964,9 @@ function GetShippingOrderDetails(Request $request){
 
  /**  -------------------------------------Cancellation Api----------------------------------- */
 
- function GoToShopCancellation(GoToShopCancel $request){   
-  $validated = $request->validated();
+ function GoToShopCancellation(Request $request){   
   $shipping = $this->getShipingFRomDatabase($request->id);
+   // print_r($shipping);die;
   if($shipping['type']=='cabify'){
      $token = $this->getTokenFromDb('cabify');
       $type = 'cabify';     
@@ -973,8 +974,14 @@ function GetShippingOrderDetails(Request $request){
         "Content-Type: application/json",
         'Authorization: Bearer '.$token['token']
     );
-   $request['reasonText'] = "Testing Cancellation";
-    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/".$request->id;
+    $request = '
+    {
+         "parcel_ids": [
+              "'.$request->id.'"
+         ]
+    }
+    ';
+    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/deliver/cancel";
   }
   if($shipping['type']=='fex'){
     $type = 'fex';
@@ -984,6 +991,7 @@ function GetShippingOrderDetails(Request $request){
    $request['acceso'] = "Testing Cancellation";
    $request['servicio'] = $request->id;;
    $request['estado'] = 3;
+   $request = json_encode($request);
     $url = "https://fex.cl/fex_api/fex_api/externo/flete/cambiar_estado";
   }
   if($shipping['type']=='Padidosya'){
@@ -995,6 +1003,7 @@ function GetShippingOrderDetails(Request $request){
       "Authorization:".$token['token']
    );
    $request['reasonText'] = "Testing Cancellation";
+   $request = json_encode($request);
     $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
   }
    
@@ -1009,7 +1018,7 @@ function GetShippingOrderDetails(Request $request){
     $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
     curl_close($curl);  
-
+    echo  $httpcode;die;
    if($httpcode==200 && $type!='padidosya'){
     $data = $this->cancelResponse($type,$resp,$shipping);
      return $data;
@@ -1109,7 +1118,7 @@ function GetShippingOrderDetails(Request $request){
 //  -------------------------------------------Shipping Proof Of Delivery--------------------------------------
 
       function ShippingProofOfDelivery(Request $request){
-        $token = $this->getTokenFromDb('Pedidosya');
+       $authrise = $this->getTokenFromDb('Pedidosya');
 
           $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";
             $curl = curl_init($url);
@@ -1118,7 +1127,7 @@ function GetShippingOrderDetails(Request $request){
             
             $headers = array(
                "Content-Type: application/json",
-               "Authorization:".$token['token']
+               "Authorization:".$authrise['token']
             );
         
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);                 
@@ -1161,7 +1170,6 @@ function GoToShopShippingOrderTracking(GoToShopShippingOrderTracking $request){
 function GoToShopProofOfDelivery(Request $request){
   $authrise = $this->getTokenFromDb('Pedidosya');
  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/proofOfDelivery";      
-
  $curl = curl_init($url);
  curl_setopt($curl, CURLOPT_URL, $url);
  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -1213,8 +1221,6 @@ function GoToShopProofOfDelivery(Request $request){
   //----------------------------------------- Delivery Fex Detail---------------------------------------------------
 
   function GoToShopFexDelieveryDetail(Request $request){
-   echo "<pre>";
-   print_r($request);die;
     $token = $this->getTokenFromDb('cabify');
   $curl = curl_init();
   curl_setopt_array($curl, array(
@@ -1409,6 +1415,7 @@ function getTokenFromDb($type){
 
 function getShipingFRomDatabase($shiping_id){
   $auth = shipmentModel::where('shipping_id',$shiping_id)->first()->toArray();
+ // print_r($auth);die;
   return $auth;
 }
 
@@ -1419,6 +1426,14 @@ function JwtAuthenticate(Request $request){
         'email' => 'required|email',    
         'password' => 'required|string|min:6|max:50'
     ]);
+
+    //Send failed response if request is not valid
+    if ($validator->fails()) {
+        return response()->json($validator->errors()->json(),400);
+    }
+
+
+ //Token created, return with success response and jwt token
     $token = Str::random(32);
     $user = User::create([
       'name' => $request->get('name'),
