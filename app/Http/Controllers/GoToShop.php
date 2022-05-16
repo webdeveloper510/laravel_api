@@ -968,9 +968,8 @@ function GetShippingOrderDetails(Request $request){
         "Content-Type: application/json",
         'Authorization: Bearer '.$token['token']
     );
-
- 
-    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/".$request->id;
+    $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/deliver/cancel";
+    $data =  '{"parcel_ids":["'.$request->id.'"]}';
   }
   if($shipping['type']=='fex'){
     $type = 'fex';
@@ -980,6 +979,7 @@ function GetShippingOrderDetails(Request $request){
    $request['acceso'] = "Testing Cancellation";
    $request['servicio'] = $request->id;;
    $request['estado'] = 3;
+   $data = json_encode($request);
     $url = "https://fex.cl/fex_api/fex_api/externo/flete/cambiar_estado";
   }
   if($shipping['type']=='Padidosya'){
@@ -991,6 +991,7 @@ function GetShippingOrderDetails(Request $request){
       "Authorization:".$token['token']
    );
    $request['reasonText'] = "Testing Cancellation";
+   $data = json_encode($request);
     $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
   }
    
@@ -998,17 +999,17 @@ function GetShippingOrderDetails(Request $request){
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);  
-    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($request));       
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);       
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
     $resp = curl_exec($curl);
     $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
     curl_close($curl);  
-
+    $httpcode = $httpcode==202 ? 200 : $httpcode;
+    //echo $httpcode;die;
    if($httpcode==200 && $type!='padidosya'){
     $data = $this->cancelResponse($type,$resp,$shipping);
-     return $data;
+     echo json_encode($data);
 
    }
 
@@ -1016,50 +1017,40 @@ function GetShippingOrderDetails(Request $request){
     return $resp;
  }
 
- function cancelResponse($type,$resp,$database_data){
+function cancelResponse($type,$resp,$database_data){
   $data = json_decode($resp,true);
   $setResponse=array();
   if($type=='cabify'){
-   $setResponse['id'] = $data['id'];
-   $setResponse['status'] = 'PREORDER';
-   $setResponse['cancelCode'] = 'CONTENT_WRONG_RIDER';
-   $setResponse['cancelReason'] = 'Producto despachado no es correcto';
+   $setResponse['id'] = $database_data['shipping_id'];
+   $setResponse['status'] = 'CANCELLED';
+   $setResponse['cancelCode'] = '';
+   $setResponse['cancelReason'] = '';
    $setResponse['referenceId'] = 'Client Internal Reference';
-   $setResponse['isTest'] = 'true';
-   $setResponse['deliveryTime'] = "2020-06-05T19:00:00Z";
-   $setResponse['lastUpdated'] = "2022-04-05T19:00:00Z";
-   $setResponse['createdAt'] = "2020-06-24T19:00:00Z";
-   $setResponse['volume'] = '20.02';
-   $setResponse['weight'] = "20";
+   $setResponse['isTest'] = '';
+   $setResponse['deliveryTime'] = $database_data["delivery_time"];
+   $setResponse['lastUpdated'] =$database_data['updated_at'];
+   $setResponse['createdAt'] = $database_data['created_at'];
+   $setResponse['volume'] = '';
+   $setResponse['weight'] ='';
    $setResponse['waypoints'] = $database_data['waypoints'];
    $setResponse['items'] = $database_data['items'];
-   $setResponse['price'] = array(
-     'distance'=>'2345',
-     'subtotal'=>'184.85',
-     'taxes'=>'5.15',
-     'total'=>'2345',
-     'currency'=>'UYU'
-   );
+   $setResponse['price'] = $database_data['price'];
   }
   if($type=='fex'){
-   $setResponse['id'] = $data["resultado"]['servicio'];
+    $setResponse['id'] = $database_data['id'];
+   $setResponse['status'] = 'CANCELLED';
+   $setResponse['cancelCode'] = '';
+   $setResponse['cancelReason'] = '';
    $setResponse['referenceId'] = 'Client Internal Reference';
-   $setResponse['status'] = 'PREORDER';
-   $setResponse['isTest'] = 'true';
-   $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
-   $setResponse['items'] = $database_data['items'];
+   $setResponse['isTest'] = '';
+   $setResponse['deliveryTime'] = $database_data["delivery_time"];
+   $setResponse['lastUpdated'] =$database_data['updated_at'];
+   $setResponse['createdAt'] = $database_data['created_at'];
+   $setResponse['volume'] = '';
+   $setResponse['weight'] ='';
    $setResponse['waypoints'] = $database_data['waypoints'];
-   $setResponse['weight'] = "20";
-   $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
-   $setResponse['createdAt'] = '2020-07-21T12:00:32Z';
-   $setResponse['volume'] = '20.02';
-   $setResponse['price'] = array(
-     'distance'=>'2345',
-     'subtotal'=>'184.85',
-     'taxes'=>'5.15',
-     'total'=>'2345',
-     'currency'=>'UYU'
-   );
+   $setResponse['items'] = $database_data['items'];
+   $setResponse['price'] = $database_data['price'];
  }
     return $setResponse;
 
@@ -1136,7 +1127,7 @@ function GetShippingOrderDetails(Request $request){
             return $resp;
          }
 
-// --------------------------------------Shipping Oerder Tracking---------------------------------------------
+// --------------------------------------Shipping Order Tracking---------------------------------------------
 
 function GoToShopShippingOrderTracking(Request $request){
   // print_r($request->all());die;
