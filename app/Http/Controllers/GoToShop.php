@@ -7,7 +7,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use App\Http\Requests\GoToShopAuthenticate;
+use App\Http\Requests\GoToShopEstimate;
+use App\Http\Requests\GoToShopShipping;
+use App\Http\Requests\GoToShopCancel;
+use App\Http\Requests\GoToShopShippingOrderTracking;
 use Illuminate\Support\Facades\Validator;
 use JWTAuth;
 use JWT;
@@ -59,8 +63,9 @@ class GoToShop extends Controller
 
   // }
 
-  function GoToShopShipping(Request $request){ 
-   // print_r($request->all());die;    
+  function GoToShopShipping(GoToShopShipping $request){ 
+    $validated = $request->validated();
+      $response = $request->all();     
     $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());   
           
@@ -91,8 +96,8 @@ class GoToShop extends Controller
 
   // ----------------------------------------------GoToShop Estimate-------------------------------------------
 
-    function GoToShopEstimate(Request $request){
-
+    function GoToShopEstimate(GoToShopEstimate $request){
+      $validated = $request->validated();
       $response = $request->all();  
       $estimate['cabify'] =$this->GetEstimate($request->all());        
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
@@ -220,7 +225,8 @@ if(!empty($insert_data)){
 
   //---------------------------------------------GoToShopAuthentication----------------------------------------- 
 
-    function GoToShopAuthentication(Request $request){
+    function GoToShopAuthentication(GoToShopAuthenticate $request){
+      $validated = $request->validated();
       switch ($request->type) {
         case "Pedidosya":
           $this->getToken($request->all());
@@ -957,7 +963,8 @@ function GetShippingOrderDetails(Request $request){
 
  /**  -------------------------------------Cancellation Api----------------------------------- */
 
- function GoToShopCancellation(Request $request){      
+ function GoToShopCancellation(GoToShopCancel $request){   
+  $validated = $request->validated();
   $shipping = $this->getShipingFRomDatabase($request->id);
   if($shipping['type']=='cabify'){
      $token = $this->getTokenFromDb('cabify');
@@ -1017,46 +1024,36 @@ function GetShippingOrderDetails(Request $request){
   $data = json_decode($resp,true);
   $setResponse=array();
   if($type=='cabify'){
-   $setResponse['id'] = $data['id'];
-   $setResponse['status'] = 'PREORDER';
-   $setResponse['cancelCode'] = 'CONTENT_WRONG_RIDER';
-   $setResponse['cancelReason'] = 'Producto despachado no es correcto';
+   $setResponse['id'] = $database_data['id'];
+   $setResponse['status'] = 'CANCELLED';
+   $setResponse['cancelCode'] = '';
+   $setResponse['cancelReason'] = '';
    $setResponse['referenceId'] = 'Client Internal Reference';
-   $setResponse['isTest'] = 'true';
-   $setResponse['deliveryTime'] = "2020-06-05T19:00:00Z";
-   $setResponse['lastUpdated'] = "2022-04-05T19:00:00Z";
-   $setResponse['createdAt'] = "2020-06-24T19:00:00Z";
-   $setResponse['volume'] = '20.02';
-   $setResponse['weight'] = "20";
+   $setResponse['isTest'] = '';
+   $setResponse['deliveryTime'] = $database_data["delivery_time"];
+   $setResponse['lastUpdated'] =$database_data['updated_at'];
+   $setResponse['createdAt'] = $database_data['created_at'];
+   $setResponse['volume'] = '';
+   $setResponse['weight'] ='';
    $setResponse['waypoints'] = $database_data['waypoints'];
    $setResponse['items'] = $database_data['items'];
-   $setResponse['price'] = array(
-     'distance'=>'2345',
-     'subtotal'=>'184.85',
-     'taxes'=>'5.15',
-     'total'=>'2345',
-     'currency'=>'UYU'
-   );
+   $setResponse['price'] = $database_data['price'];
   }
   if($type=='fex'){
-   $setResponse['id'] = $data["resultado"]['servicio'];
+    $setResponse['id'] = $database_data['id'];
+   $setResponse['status'] = 'CANCELLED';
+   $setResponse['cancelCode'] = '';
+   $setResponse['cancelReason'] = '';
    $setResponse['referenceId'] = 'Client Internal Reference';
-   $setResponse['status'] = 'PREORDER';
-   $setResponse['isTest'] = 'true';
-   $setResponse['deliveryTime'] = "2020-06-24T19:00:00Z";
-   $setResponse['items'] = $database_data['items'];
+   $setResponse['isTest'] = '';
+   $setResponse['deliveryTime'] = $database_data["delivery_time"];
+   $setResponse['lastUpdated'] =$database_data['updated_at'];
+   $setResponse['createdAt'] = $database_data['created_at'];
+   $setResponse['volume'] = '';
+   $setResponse['weight'] ='';
    $setResponse['waypoints'] = $database_data['waypoints'];
-   $setResponse['weight'] = "20";
-   $setResponse['lastUpdated'] = "2020-07-21T12:10:32Z";
-   $setResponse['createdAt'] = '2020-07-21T12:00:32Z';
-   $setResponse['volume'] = '20.02';
-   $setResponse['price'] = array(
-     'distance'=>'2345',
-     'subtotal'=>'184.85',
-     'taxes'=>'5.15',
-     'total'=>'2345',
-     'currency'=>'UYU'
-   );
+   $setResponse['items'] = $database_data['items'];
+   $setResponse['price'] = $database_data['price'];
  }
     return $setResponse;
 
@@ -1135,7 +1132,8 @@ function GetShippingOrderDetails(Request $request){
 
 // --------------------------------------Shipping Oerder Tracking---------------------------------------------
 
-function GoToShopShippingOrderTracking(Request $request){
+function GoToShopShippingOrderTracking(GoToShopShippingOrderTracking $request){
+  $validated = $request->validated();
   // print_r($request->all());die;
   $authrise = $this->getTokenFromDb('Pedidosya');
  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/tracking";      
@@ -1427,6 +1425,7 @@ function JwtAuthenticate(Request $request){
       'email' =>$request->get('email'),
       'password' =>$request->get('password'),
       'remember_token'=>$token
+
     ]);
     return response()->json([
              'success' => true,

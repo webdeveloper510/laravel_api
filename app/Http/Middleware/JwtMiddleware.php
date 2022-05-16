@@ -35,6 +35,7 @@ class JwtMiddleware extends BaseMiddleware
         //$client = $request->header( 'client' );
         $token  = $request->header( 'token' );
         $checkToken = User::where( 'remember_token', $token)->first();
+        //print_r($checkToken);die;
         return $checkToken;
     }
 
