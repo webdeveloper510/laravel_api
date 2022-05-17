@@ -7,7 +7,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use App\Http\Requests\GoToShopAuthenticate;
+use App\Http\Requests\GoToShopEstimate;
+use App\Http\Requests\GoToShopShipping;
+use App\Http\Requests\GoToShopCancel;
+use App\Http\Requests\GoToShopShippingOrderTracking;
 use Illuminate\Support\Facades\Validator;
 use JWTAuth;
 use JWT;
@@ -59,8 +63,9 @@ class GoToShop extends Controller
 
   // }
 
-  function GoToShopShipping(Request $request){ 
-   // print_r($request->all());die;    
+  function GoToShopShipping(GoToShopShipping $request){ 
+    $validated = $request->validated();
+      $response = $request->all();     
     $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());   
           
@@ -91,8 +96,8 @@ class GoToShop extends Controller
 
   // ----------------------------------------------GoToShop Estimate-------------------------------------------
 
-    function GoToShopEstimate(Request $request){
-
+    function GoToShopEstimate(GoToShopEstimate $request){
+      $validated = $request->validated();
       $response = $request->all();  
       $estimate['cabify'] =$this->GetEstimate($request->all());        
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
@@ -215,12 +220,12 @@ if(!empty($insert_data)){
 
 }
 
-
   }
 
   //---------------------------------------------GoToShopAuthentication----------------------------------------- 
 
-    function GoToShopAuthentication(Request $request){
+    function GoToShopAuthentication(GoToShopAuthenticate $request){
+      $validated = $request->validated();
       switch ($request->type) {
         case "Pedidosya":
           $this->getToken($request->all());
@@ -958,7 +963,8 @@ function GetShippingOrderDetails(Request $request){
 
  /**  -------------------------------------Cancellation Api----------------------------------- */
 
- function GoToShopCancellation(Request $request){   
+ function GoToShopCancellation(GoToShopCancel $request){   
+     $validated = $request->validated();
   $shipping = $this->getShipingFRomDatabase($request->id);
    // print_r($shipping);die;
   if($shipping['type']=='cabify'){
@@ -968,8 +974,18 @@ function GetShippingOrderDetails(Request $request){
         "Content-Type: application/json",
         'Authorization: Bearer '.$token['token']
     );
+
     $url = "https://delivery.api.cabify-sandbox.com/v1/parcels/deliver/cancel";
     $data =  '{"parcel_ids":["'.$request->id.'"]}';
+
+    $request = '
+    {
+         "parcel_ids": [
+              "'.$request->id.'"
+         ]
+    }
+    ';
+
   }
   if($shipping['type']=='fex'){
     $type = 'fex';
@@ -980,6 +996,8 @@ function GetShippingOrderDetails(Request $request){
    $request['servicio'] = $request->id;;
    $request['estado'] = 3;
    $data = json_encode($request);
+
+
     $url = "https://fex.cl/fex_api/fex_api/externo/flete/cambiar_estado";
   }
   if($shipping['type']=='Padidosya'){
@@ -991,7 +1009,11 @@ function GetShippingOrderDetails(Request $request){
       "Authorization:".$token['token']
    );
    $request['reasonText'] = "Testing Cancellation";
+
    $data = json_encode($request);
+
+
+
     $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/cancel";
   }
    
@@ -1005,8 +1027,11 @@ function GetShippingOrderDetails(Request $request){
     $resp = curl_exec($curl);
     $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);  
+
     $httpcode = $httpcode==202 ? 200 : $httpcode;
     //echo $httpcode;die;
+
+
    if($httpcode==200 && $type!='padidosya'){
     $data = $this->cancelResponse($type,$resp,$shipping);
      echo json_encode($data);
@@ -1021,7 +1046,10 @@ function cancelResponse($type,$resp,$database_data){
   $data = json_decode($resp,true);
   $setResponse=array();
   if($type=='cabify'){
+
    $setResponse['id'] = $database_data['shipping_id'];
+
+
    $setResponse['status'] = 'CANCELLED';
    $setResponse['cancelCode'] = '';
    $setResponse['cancelReason'] = '';
@@ -1129,7 +1157,8 @@ function cancelResponse($type,$resp,$database_data){
 
 // --------------------------------------Shipping Order Tracking---------------------------------------------
 
-function GoToShopShippingOrderTracking(Request $request){
+function GoToShopShippingOrderTracking(GoToShopShippingOrderTracking $request){
+  $validated = $request->validated();
   // print_r($request->all());die;
   $authrise = $this->getTokenFromDb('Pedidosya');
  $url = "https://courier-api.pedidosya.com/v1/shippings/".$request->id."/tracking";      
@@ -1427,6 +1456,7 @@ function JwtAuthenticate(Request $request){
       'email' =>$request->get('email'),
       'password' =>$request->get('password'),
       'remember_token'=>$token
+
     ]);
     return response()->json([
              'success' => true,

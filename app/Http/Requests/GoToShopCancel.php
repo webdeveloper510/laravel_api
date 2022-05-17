@@ -31,7 +31,8 @@ class GoToShopCancel extends FormRequest
     
     function message(){
           return [
-            'id.required' => 'id is required!'
+            'id.required' => 'id is required!',
+            'reasonText.required' => 'reasonText is required',
             ];
         }
 }
