@@ -25,14 +25,14 @@ class GoToShopCancel extends FormRequest
     {
         return [
             'id' => 'required',
-            'reasonText' => 'required',
+           // 'reasonText' =>'required_if:type,Pedidosya',
         ];
     }
     
     function message(){
           return [
-            'id.required' => 'id is required!',
-            'reasonText.required' => 'reasonText is required',
+            'id.required' => 'Shipping is required!',
+           // 'reasonText.required' => 'reasonText is required',
             ];
         }
 }

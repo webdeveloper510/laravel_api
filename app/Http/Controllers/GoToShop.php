@@ -907,7 +907,8 @@ return $resp;
 
 /**-------------------------------------------Get Shipping Padidosya details------------------------------- */
 
-function GetShippingOrderDetails(Request $request){      
+function GetShippingOrderDetails(GoToShopCancel $request){      
+     $validated = $request->validated();
   $shipping = $this->getShipingFRomDatabase($request->id);
   if($shipping['type']=='cabify'){
      $token = $this->getTokenFromDb('cabify');

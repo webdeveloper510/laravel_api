@@ -30,8 +30,8 @@ class GoToShopEstimate extends FormRequest
             'volume'=>'required', 
             'deliveryTime'=>'required',
             'weight'=>'required', 
-       'items.*'=>'required',
-       'waypoints.*'=>'required',
+       'items.*.'=>'required',
+       'waypoints.*.'=>'required',
         ];
     }
 
