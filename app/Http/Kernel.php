@@ -16,6 +16,7 @@ class Kernel extends HttpKernel
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
+        \Fruitcake\Cors\HandleCors::class,
          \App\Http\Middleware\CORS::class,
         \Fruitcake\Cors\HandleCors::class,
         
@@ -59,7 +60,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
 
         'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class,
-        'CORS' => \App\Http\Middleware\core::class,
+        'api_allow' => \App\Http\Middleware\CORS::class,
         'jwt.auth' => 'Tymon\JWTAuth\Middleware\GetUserFromToken',
       //  'jwt.refresh' => 'Tymon\JWTAuth\Middleware\RefreshToken',
         'auth' => \App\Http\Middleware\Authenticate::class,

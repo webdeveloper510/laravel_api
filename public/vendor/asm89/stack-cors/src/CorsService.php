@@ -128,6 +128,7 @@ class CorsService
         $this->configureAllowedOrigin($response, $request);
 
         if ($response->headers->has('Access-Control-Allow-Origin')) {
+            echo "I am in";
             $this->configureAllowCredentials($response, $request);
 
             $this->configureExposedHeaders($response, $request);

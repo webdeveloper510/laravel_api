@@ -4,9 +4,6 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
 
-//header('Access-Control-Allow-Origin', '*');
-//header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-
 define('LARAVEL_START', microtime(true));
 
 
