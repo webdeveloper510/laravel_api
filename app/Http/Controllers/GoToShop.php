@@ -241,7 +241,7 @@ if(!empty($insert_data)){
     }
 // --------------------------------------Padidosya Authentication---------------------------------------
 
-  function getToken($token){ 
+  function getToken(Request $request){ 
     $url = "https://auth-api.pedidosya.com/v1/token";
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -253,13 +253,11 @@ if(!empty($insert_data)){
     );
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);    
    $data = array();
-    $data['client_id'] = $token['client_id'];
-    $data['client_secret'] = $token['client_secret'];
-    $data['grant_type'] = $token['grant_type'];
-    $data['password'] = $token['password'];
-    $data['username'] = $token['username'];    
-    // echo "<pre>";
-    // print_r($data);die;
+    $data['client_id'] = 'courier_270551_cl';
+    $data['client_secret'] ='f745286606';
+    $data['grant_type'] = 'password';
+    $data['password'] = 'GQZhWZIA=2022';
+    $data['username'] = '270551-RJBJY@courierapi.com';    
     curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);    
@@ -267,14 +265,15 @@ if(!empty($insert_data)){
     $response = json_decode($resp,true);
     if($response['access_token']){
       $store = new Authentication;
-      $store->client_id = $token['client_id'];
-      $store->client_secret = $token['client_secret'];
-      $store->grant_type = $token['grant_type'];
-      $store->password = $token['password'];
-      $store->username = $token['username'];
-      $store->type = $token['type'];
+      $store->client_id = $data['client_id'];
+      $store->client_secret = $data['client_secret'];
+      $store->grant_type = $data['grant_type'];
+      $store->password = $data['password'];
+      $store->username = $data['username'];
+      $store->type = 'Pedidosya';
       $store->token = $response['access_token'];
-      $store->save();    
+      $store->save();
+      $this->GetAccessToken();
     }
     $response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
@@ -284,7 +283,7 @@ if(!empty($insert_data)){
 
 
  /**------------------------------------------Cabify Authentication------------------------------------------------- */
- function GetAccessToken($token){
+ function GetAccessToken(){
 
   //print_r($token);die;
 
@@ -302,24 +301,23 @@ if(!empty($insert_data)){
 
   $data = array();
 
-  $data['grant_type'] =$token['grant_type'];
-  $data['client_id'] =$token['client_id'];
-  $data['client_secret'] =$token['client_secret'];
+  $data['grant_type'] ='client_credentials';
+  $data['client_id'] ='49834944447749338a7f17c62bfb8de0';
+  $data['client_secret'] ='MK84LtOM-WxtYLIZ';
   
   curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));       
   curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
   curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);  
   $resp = curl_exec($curl);
   $response = json_decode($resp,true);
- // print_r($response);die;
   if($response['access_token']){
     $store = new Authentication;
-    $store->client_id = $token['client_id'];
-    $store->client_secret = $token['client_secret'];
-    $store->grant_type = $token['grant_type'];
+    $store->client_id = $data['client_id'];
+    $store->client_secret = $data['client_secret'];
+    $store->grant_type = $data['grant_type'];
     $store->password = '';
     $store->username = '';
-    $store->type = $token['type'];
+    $store->type = 'cabify';
     $store->token = $response['access_token'];
     $store->save();
     $auth_response['access_token'] = $response['access_token'];
@@ -327,8 +325,7 @@ if(!empty($insert_data)){
   }
   $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
   curl_close($curl);
-
-  return $response;
+  return 1;
 }
 
 //----------------------------------Padidosya Estimate------------------------------------------------------
@@ -1270,42 +1267,58 @@ function GoToShopProofOfDelivery(Request $request){
   //---------------------------------------------Padidosya Create Callback-----------------------------------------------
 
   function createCallback(Request $request){
-
+      
+       $authrise = $this->getTokenFromDb('Pedidosya');
     $url = "https://courier-api.pedidosya.com/v1/callbacks";
-
+    
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_PUT, true);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    
     $headers = array(
        "Content-Type: application/json",
-       "Authorization:".$request->token
-    );
+       "Authorization:".$authrise['token']
+     );
+    // print_r($headers);die;
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    for($i=0; $i<count($request->callbacks);$i++){
-      $data['callbacks'][$i]['url'] = $request['callbacks'][$i]['url'];
-      $data['callbacks'][$i]['authorizationKey'] = $request['callbacks'][$i]['authorizationKey'];
-      $data['callbacks'][$i]['topic'] = $request['callbacks'][$i]['topic'];
-      $data['callbacks'][$i]['notificationType'] = $request['callbacks'][$i]['notificationType'];
-    }
+    $data=array();
+    $data['callbacks']= [
+        'url'=>'http://test.gotoshop.cl/laravel_api/api/updateStatus',
+        'authorizationKey'=>'Padidosya_123_status',
+         'notificationType'=>'WEBHOOK',
+         'topic'=>'SHIPPING_STATUS',
+         'isTest'=>true
+        ];
+        
 
-    // echo "<pre>";
-    // print_r(json_encode($data));die;
-    
-    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($data,JSON_UNESCAPED_SLASHES));
     
     //for debug only!
     curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
     
     $resp = curl_exec($curl);
+     $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
+    
     var_dump($resp);
 
   }
+  
+  
+  /*-----------------------------------------------------------------------------Receive Callbacks--------------------------------------------------------------*/
+  
+  function changeStatus(Request $request){
+      
+      $data = array('created_at'=>now(),'updated_at'=>now(),'webhook'=>'data');
+      
+      DB::table('checkStatus')->insert($data);
+      
+      return http_response_code(200);
+      
+  }
 
-// --------------------------------------------------Set Status---------------------------------------------
+// ---------------------------------------------------------------------------Set Status---------------------------------------------
 
   function setStatus(Request $request){
     
@@ -1436,6 +1449,34 @@ function getShipingFRomDatabase($shiping_id){
   return $auth;
 }
 
+function GoToShopShipments($id){
+    //echo $id;die;
+      $shipments = shipmentModel::where('user_id',$id)->get();
+ // print_r($auth);die;
+   return $shipments;
+}
+
+function GoToShopRegister(Request $request)
+{
+    $rules = [
+        'name' => 'unique:users|required',
+        'email'    => 'unique:users|required',
+        'password' => 'required',
+    ];
+
+    $input     = $request->only('name', 'email','password');
+    $validator = Validator::make($input, $rules);
+
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'error' => $validator->messages()]);
+    }
+    $name = $request->name;
+    $email    = $request->email;
+    $password = $request->password;
+    $user     = User::create(['name' => $name, 'email' => $email, 'password' =>md5($password)]);
+
+}
+    
 function JwtAuthenticate(Request $request){
     $credentials = $request->only('email', 'password');
     //valid credential

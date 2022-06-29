@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
+header('Access-Control-Allow-Origin:*');
+header('Access-Control-Allow-Methods:POST, GET, OPTIONS, PUT, DELETE');
+header('Access-Control-Allow-Headers:Content-Type, X-Auth-Token, Origin, Authorization');
+echo "here";die;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,8 +54,6 @@ Route::put('/createCallback', [pedidosyaApiController::class, 'createCallback'])
 
 Route::put('/status', [pedidosyaApiController::class, 'setStatus']);
 
-Route::put('/updateStatus', [pedidosyaApiController::class, 'updateStatus']);
-
 // ---------------------------------------------Cabify Routes----------------------------------------
 
 Route::post('/cabify-auth', [cabifyController::class, 'GetAccessToken']);
@@ -63,8 +65,6 @@ Route::post('/CreateJourney', [cabifyController::class, 'CreateJourney']);
 Route::post('/CabifyEstimate', [cabifyController::class, 'GetEstimate']);
 
 Route::post('/CabifyWebhook', [cabifyController::class, 'Callback']);
-
-Route::post('/updateStatus', [cabifyController::class, 'updateStatus']);
 
 Route::post('/CabifyCencellation', [cabifyController::class, 'PostCancelDelivery']);
 
@@ -81,15 +81,23 @@ Route::post('/FexCallback', [FexController::class, 'FexCallback']);
 Route::post('/tryShipping', [GoToShop::class, 'PostCreateDelivery']);
 
 // -----------------------------------------Gotoshop Route-------------------------------------
-Route::controller(UserController::class)->group(function () {
-    Route::post('login', 'login');
-    Route::post('register', 'register');
-});
-Route::post('/login', [GoToShop::class, 'JwtAuthenticate']);
+
+Route::post('login',[UserController::class,'login']);
+    
+Route::post('register',[UserController::class,'register']);
+    
+Route::put('callback',[GoToShop::class, 'createCallback']);
+
+Route::post('/updateStatus', [cabifyController::class, 'changeStatus']);
+
+ //Route::post('/login', [GoToShop::class, 'JwtAuthenticate']);
+Route::get('/my-shipments/{id}', [GoToShop::class, 'GoToShopShipments']);
+//Route::post('/register', [GoToShop::class, 'GoToShopRegister']);
+
 
 Route::group(['middleware' => ['jwt.verify']], function() {
 Route::post('/shipping', [GoToShop::class, 'GoToShopShipping']);
-
+Route::get('/my-shipments/{id}', [GoToShop::class, 'GoToShopShipments']);
 //Route::post('/test', [GoToShop::class, 'GoToShopTest']);
 
 Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
@@ -100,9 +108,12 @@ Route::post('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
 
 Route::post('/ShippingOrderTracking', [GoToShop::class, 'GoToShopShippingOrderTracking']);
 
-Route::post('/Authentication', [GoToShop::class, 'GoToShopAuthentication']);
+Route::post('/Authentication', [GoToShop::class, 'getToken']);
 
 Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
+
+
+
 });
 
 

@@ -4,3 +4,19 @@
 [16-May-2022 23:52:57 UTC] PHP Fatal error:  Cannot redeclare App\Http\Requests\GoToShopCancel::message() in /home/u00wh6mx0lgf/public_html/laravel_api/app/Http/Requests/GoToShopCancel.php on line 39
 [16-May-2022 23:56:12 UTC] PHP Fatal error:  Cannot redeclare App\Http\Requests\GoToShopCancel::message() in /home/u00wh6mx0lgf/public_html/laravel_api/app/Http/Requests/GoToShopCancel.php on line 39
 [16-May-2022 23:59:32 UTC] PHP Fatal error:  Cannot redeclare App\Http\Requests\GoToShopCancel::message() in /home/u00wh6mx0lgf/public_html/laravel_api/app/Http/Requests/GoToShopCancel.php on line 39
+[15-Jun-2022 16:07:37 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 75177984 bytes) in /home/u00wh6mx0lgf/public_html/laravel_api/app/Http/Controllers/UserController.php on line 35
+[27-Jun-2022 20:01:06 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 10
+[27-Jun-2022 20:14:40 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 10
+[27-Jun-2022 20:17:01 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 10
+[27-Jun-2022 20:21:22 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 10
+[27-Jun-2022 20:27:57 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:29:55 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:32:31 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:33:13 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:34:31 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:34:47 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:43:17 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:44:00 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:44:19 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 20:52:09 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[27-Jun-2022 21:16:34 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11

@@ -4,68 +4,72 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+header('Access-Control-Allow-Origin: *');
 class UserController extends Controller
 {
     public function __construct()
     {
-        //$this->middleware('auth:api', ['except' => ['login','register']]);
+        $this->middleware('auth:api', ['except' => ['login','register']]);
     }
     //
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-        $credentials = $request->only('email', 'password');
 
-        $token = Auth::attempt($credentials);
-        if (!$token) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized',
-            ], 401);
-        }
+    $rules = [
+        'email'    => 'required',
+        'password' => 'required',
+    ];
 
-        $user = Auth::user();
-        return response()->json([
-                'status' => 'success',
-                'user' => $user,
-                'authorisation' => [
-                    'token' => $token,
-                    'type' => 'bearer',
-                ]
-            ]);
+    $input     = $request->only('email','password');
+    
+    $validator = Validator::make($input, $rules);
+
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'error' => $validator->messages()]);
+    }
+    $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get()->toArray();
+          return response()->json([
+            'status' => 'success',
+            'message' => 'User Login successfully',
+            'user' => $user,
+        ],200);
 
     }
+public function register(Request $request){
+        //print_r($request->all());die;
+     $rules = [
+        'name' => 'unique:users|required',
+        'email'    => 'unique:users|required',
+        'password' => 'required',
+    ];
 
+    $input     = $request->only('name', 'email','password');
+    $validator = Validator::make($input, $rules);
 
-    public function register(Request $request){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $token = Auth::login($user);
-        echo $token;die;
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'error' => $validator->messages()]);
+    }
+    $name = $request->name;
+    $email    = $request->email;
+    $password = $request->password;
+    $user     = User::create(['name' => $name, 'email' => $email, 'password' => md5($password)]);
+       $success['token'] =  $user->createToken('Laravel')->plainTextToken;
+        $success['name'] =  $user->name;
+        $user->remember_token =  $success['token'];
+        $user->save();
         return response()->json([
             'status' => 'success',
             'message' => 'User created successfully',
             'user' => $user,
-            'authorisation' => [
-                'token' => $token,
-                'type' => 'bearer',
-            ]
-        ]);
+            'authentiation'=>[
+                'token'=>$success['token']
+                ]
+        ],200);
     }
 
 }
