@@ -96,7 +96,7 @@ Route::get('/my-shipments/{id}', [GoToShop::class, 'GoToShopShipments']);
 //Route::post('/test', [GoToShop::class, 'GoToShopTest']);
 
 Route::post('/estimate', [GoToShop::class, 'GoToShopEstimate']);
-
+    
 Route::post('/shippings', [GoToShop::class, 'GetShippingOrderDetails']);
 
 Route::post('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
