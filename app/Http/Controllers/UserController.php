@@ -33,11 +33,21 @@ class UserController extends Controller
         return response()->json(['success' => false, 'error' => $validator->messages()]);
     }
     $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get()->toArray();
-          return response()->json([
+    if($user){
+        return response()->json([
             'status' => 'success',
             'message' => 'User Login successfully',
             'user' => $user,
         ],200);
+    }
+    
+    else{
+            return response()->json([
+            'status' => 'Failed',
+            'message' => 'User not found!',
+        ],400);
+    }
+      
 
     }
 public function register(Request $request){
