@@ -23,7 +23,7 @@ const UPDATED_AT = null; //and updated by default null set
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','remember_token',
+        'name', 'email', 'password','remember_token','surname','billingAddress','telephone','bussinessName','tradeName','ruc','turn'
     ];
 
     /**

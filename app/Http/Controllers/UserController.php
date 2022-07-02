@@ -56,6 +56,13 @@ public function register(Request $request){
         'name' => 'unique:users|required',
         'email'    => 'unique:users|required',
         'password' => 'required',
+        'surname'=>'required',
+        'billingAddress'=>'required',
+        'telephone'=>'required',
+        'bussinessName'=>'required',
+        'tradeName'=>'required',
+       'ruc'=>'required',
+        'turn'=>'required',
     ];
 
     $input     = $request->only('name', 'email','password');
@@ -67,7 +74,17 @@ public function register(Request $request){
     $name = $request->name;
     $email    = $request->email;
     $password = $request->password;
-    $user     = User::create(['name' => $name, 'email' => $email, 'password' => md5($password)]);
+    $user     = User::create(['name' => $name, 'email' => $email, 'password' => md5($password),'login_status'=>1,
+        'surname'=>$request->surname,
+        'billingAddress'=>$request->billingAddress,
+        'telephone'=>$request->telephone,
+        'bussinessName'=>$request->bussinessName,
+        'tradeName'=>$request->tradeName,
+        'ruc'=>$request->ruc,
+        'turn'=>$request->turn
+        ]
+        
+        );
        $success['token'] =  $user->createToken('Laravel')->plainTextToken;
         $success['name'] =  $user->name;
         $user->remember_token =  $success['token'];
