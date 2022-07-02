@@ -1450,10 +1450,20 @@ function getShipingFRomDatabase($shiping_id){
 }
 
 function GoToShopShipments($id){
-    //echo $id;die;
-      $shipments = shipmentModel::where('user_id',$id)->get();
- // print_r($auth);die;
-   return $shipments;
+ $shipments = shipmentModel::where('user_id',$id)->get();
+     if($shipments){
+        return response()->json([
+            'status' => 'success',
+            'shipments' => $shipments,
+        ],200);
+     }
+     
+     else{
+        return response()->json([
+            'status' => 'Failed',
+            'user' =>'No Shipments yet!',
+        ],400);
+     }
 }
 
 function GoToShopRegister(Request $request)
