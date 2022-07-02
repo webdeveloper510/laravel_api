@@ -1455,7 +1455,8 @@ function GoToShopShipments($id){
         return response()->json([
             'status' => 'success',
             'shipments' => $shipments,
-        ],JSON_UNESCAPED_SLASHES,200);
+            JSON_UNESCAPED_SLASHES
+        ],200);
      }
      
      else{
