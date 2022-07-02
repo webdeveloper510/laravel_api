@@ -1450,7 +1450,7 @@ function getShipingFRomDatabase($shiping_id){
 }
 
 function GoToShopShipments($id){
- $shipments = shipmentModel::where('user_id',$id)->get();
+ $shipments = shipmentModel::where('user_id',$id)->get()->toArray();
      if($shipments){
         return response()->json([
             'status' => 'success',
