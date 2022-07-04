@@ -30,8 +30,8 @@ class GoToShopShipping extends FormRequest
             'notificationMail'=>'required',
             'volume'=>'required',
             'weight'=>'required', 
-       'items.*'=>'required',
-       'waypoints.*'=>'required',
+            'items.*'=>'required',
+            'waypoints.*'=>'required',
         ];
     }
 }
