@@ -65,7 +65,8 @@ class GoToShop extends Controller
 
   function GoToShopShipping(GoToShopShipping $request){ 
     $validated = $request->validated();
-      $response = $request->all();     
+      $response = $request->all();    
+      print_r($response);die; 
     $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());   
           
@@ -346,7 +347,7 @@ if(!empty($insert_data)){
          curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
          
          $data =array();
-         $data['referenceId']=$postdata['referenceId'];
+         $data['referenceId']='Client-reference_'.$postdata['referenceId'];
          $data['isTest']=$postdata['isTest'];
          $data['deliveryTime']=$postdata['deliveryTime'];
          $data['notificationMail']=$postdata['notificationMail'];
@@ -497,7 +498,7 @@ if(!empty($insert_data)){
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     
     $data = array();
-    $data['referenceId'] =$shipping['referenceId'];
+    $data['referenceId'] ='Client-reference_'.$shipping['referenceId'];
     $data['isTest'] =$shipping['isTest'];
     $data['deliveryTime'] =$shipping['deliveryTime'];
     $data['notificationMail'] =$shipping['notificationMail'];
