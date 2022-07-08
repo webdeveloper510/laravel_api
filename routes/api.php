@@ -80,6 +80,8 @@ Route::post('/tryShipping', [GoToShop::class, 'PostCreateDelivery']);
 Route::post('login',[UserController::class,'login']);
     
 Route::post('register',[UserController::class,'register'])->middleware('api_allow');
+
+Route::post('/Authentication', [GoToShop::class, 'getToken']);
     
 Route::put('callback',[GoToShop::class, 'createCallback']);
 
@@ -103,7 +105,7 @@ Route::post('/ProofOfDelivery', [GoToShop::class, 'GoToShopProofOfDelivery']);
 
 Route::post('/ShippingOrderTracking', [GoToShop::class, 'GoToShopShippingOrderTracking']);
 
-Route::post('/Authentication', [GoToShop::class, 'getToken']);
+
 
 Route::post('/Cancellation', [GoToShop::class, 'GoToShopCancellation']);
 

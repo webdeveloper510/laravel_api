@@ -66,8 +66,8 @@ class GoToShop extends Controller
   function GoToShopShipping(GoToShopShipping $request){ 
     $validated = $request->validated();
       $response = $request->all();    
-      print_r($response);die; 
-    $estimate = array();
+     // print_r(json_encode($response));die; 
+       $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());   
           
       $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
@@ -169,7 +169,7 @@ class GoToShop extends Controller
      if($plateform=='padidosya_estimate'){
       $insert_data['user_id'] =1;
       $insert_data['shipping_id'] = $save['id'];
-      $insert_data['reference_id'] =$save['referenceId'];
+      $insert_data['reference_id'] ='Client-reference'.$save['referenceId'];
       $insert_data['delivery_time'] =$save['deliveryTime'];
       $insert_data['waypoints'] =$save['waypoints'];
       $insert_data['items'] =$save['items'];
@@ -357,7 +357,7 @@ if(!empty($insert_data)){
          $data['items'][$i]['categoryId'] = $postdata['items'][$i]['categoryId'];
          $data['items'][$i]['value'] = $postdata['items'][$i]['value'];
          $data['items'][$i]['description'] = $postdata['items'][$i]['description'];
-         $data['items'][$i]['sku'] = $postdata['items'][$i]['sku'];
+        // $data['items'][$i]['sku'] = $postdata['items'][$i]['sku'];
          $data['items'][$i]['quantity'] = $postdata['items'][$i]['quantity'];
          $data['items'][$i]['volume'] = $postdata['items'][$i]['volume'];
          $data['items'][$i]['weight'] = $postdata['items'][$i]['weight'];
@@ -383,7 +383,7 @@ if(!empty($insert_data)){
          $resp = curl_exec($curl);
          curl_close($curl);
           $data = json_decode($resp,true);
-      
+     // print_r(json_encode($data));die;
           
           return ['price'=>$data['price']['total'],'result'=>$data];
        }
@@ -416,9 +416,10 @@ if(!empty($insert_data)){
       $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
       curl_close($curl);
       $parcels_estimate = json_decode($response,true);
+  
       if($httpcode==200){
         $setResponse=array();
-        $setResponse['referenceId']=$postData['referenceId'];
+        $setResponse['referenceId']='Client-reference_'.$postData['referenceId'];
         $setResponse['deliveryTime']=$postData['deliveryTime'];
         $setResponse['volume']=$postData['volume'];
         $setResponse['weight']=$postData['weight'];
