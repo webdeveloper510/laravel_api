@@ -65,8 +65,9 @@ class GoToShop extends Controller
 
   function GoToShopShipping(GoToShopShipping $request){ 
     $validated = $request->validated();
-      $response = $request->all();    
-     // print_r(json_encode($response));die; 
+      $response = $request->all();
+      $latLong = $this->getLatLong($response);    
+      print_r(json_encode($latLong));die; 
        $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());   
           
@@ -75,6 +76,32 @@ class GoToShop extends Controller
       $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
       $key = $this->matchPrice($price_array);
       $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result'],$estimate['cabify']['parcel_id']);
+  }
+
+  function getLatLong($latlong){
+      //   $ch = curl_init();
+         $latitude = $latlong['waypoints'][0]['addressStreet'];
+      //   $key = 'AIzaSyBEHpF_vwT30zqVUryq8-ryr6t0LPgkQbE'; 
+      //    $url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.$latitude.'&key='.$key;
+      //   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      //   curl_setopt($ch, CURLOPT_URL,$url);
+      //   $result=curl_exec($ch);
+      //   curl_close($ch);
+      //  return  json_decode($result, true);
+       echo $details_url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . $latitude . "&sensor=false&key=AIzaSyBEHpF_vwT30zqVUryq8-ryr6t0LPgkQbE";
+    
+       $ch = curl_init();
+       curl_setopt($ch, CURLOPT_URL, $details_url);
+       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER , false);
+       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST , false);
+       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+       $geoloc = json_decode(curl_exec($ch), true);
+    print_r($geoloc);die;
+      //  $step1 = $geoloc['results'];
+      //  $step2 = $step1['geometry'];
+      //  $coords = $step2['location'];
+      return  $coords;
+     
   }
   function getVehicle($weight){
     if($weight<=4){
