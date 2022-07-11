@@ -66,8 +66,8 @@ class GoToShop extends Controller
   function GoToShopShipping(GoToShopShipping $request){ 
     $validated = $request->validated();
       $response = $request->all();
-      $latLong = $this->getLatLong($response);    
-      print_r(json_encode($latLong));die; 
+      // $latLong = $this->getLatLong($response);    
+       //print_r(json_encode($response));die; 
        $estimate = array();
       $estimate['cabify'] =$this->GetEstimate($request->all());   
           
@@ -78,31 +78,7 @@ class GoToShop extends Controller
       $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result'],$estimate['cabify']['parcel_id']);
   }
 
-  function getLatLong($latlong){
-      //   $ch = curl_init();
-         $latitude = $latlong['waypoints'][0]['addressStreet'];
-      //   $key = 'AIzaSyBEHpF_vwT30zqVUryq8-ryr6t0LPgkQbE'; 
-      //    $url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.$latitude.'&key='.$key;
-      //   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      //   curl_setopt($ch, CURLOPT_URL,$url);
-      //   $result=curl_exec($ch);
-      //   curl_close($ch);
-      //  return  json_decode($result, true);
-       echo $details_url = "https://maps.googleapis.com/maps/api/geocode/json?address=" . $latitude . "&sensor=false&key=AIzaSyBEHpF_vwT30zqVUryq8-ryr6t0LPgkQbE";
-    
-       $ch = curl_init();
-       curl_setopt($ch, CURLOPT_URL, $details_url);
-       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER , false);
-       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST , false);
-       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-       $geoloc = json_decode(curl_exec($ch), true);
-    print_r($geoloc);die;
-      //  $step1 = $geoloc['results'];
-      //  $step2 = $step1['geometry'];
-      //  $coords = $step2['location'];
-      return  $coords;
-     
-  }
+ 
   function getVehicle($weight){
     if($weight<=4){
       $vehicleIdentifier = 1;
@@ -194,7 +170,7 @@ class GoToShop extends Controller
     //print_r($save);die;
     $insert_data=[];
      if($plateform=='padidosya_estimate'){
-      $insert_data['user_id'] =1;
+      $insert_data['user_id'] =$postData['user_id'];
       $insert_data['shipping_id'] = $save['id'];
       $insert_data['reference_id'] ='Client-reference'.$save['referenceId'];
       $insert_data['delivery_time'] =$save['deliveryTime'];
@@ -205,7 +181,7 @@ class GoToShop extends Controller
       $insert_data['type'] ="padidosya";
      }
      if($plateform=='cabify'){
-      $insert_data['user_id'] =1;
+      $insert_data['user_id'] =$postData['user_id'];
       $insert_data['reference_id'] =$save['referenceId'];
       $insert_data['delivery_time']=$save['deliveryTime'];
       $insert_data['items'] =json_encode($save['items']);
@@ -216,7 +192,7 @@ class GoToShop extends Controller
       $insert_data['type'] = "cabify";
   }
   if($plateform=='fex'){
-    $insert_data['user_id'] =1;
+    $insert_data['user_id'] =$postData['user_id'];
     $insert_data['reference_id'] ='fex refference';
     $insert_data['delivery_time']=$postData['deliveryTime'];
     $insert_data['waypoints']=$postData['waypoints'];
@@ -231,7 +207,7 @@ class GoToShop extends Controller
 if(!empty($insert_data)){
 
   $shipment = new shipmentModel;
-  $shipment->user_id =1;
+  $shipment->user_id = $insert_data['user_id'];
   $shipment->reference_id = $insert_data['reference_id'];
   $shipment->items = $insert_data['items'];
   $shipment->waypoints =$insert_data['waypoints'];
