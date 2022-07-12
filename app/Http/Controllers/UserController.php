@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-header('Access-Control-Allow-Origin: *');
 class UserController extends Controller
 {
     public function __construct()
@@ -32,8 +31,7 @@ class UserController extends Controller
     if ($validator->fails()) {
         return response()->json(['success' => false, 'error' => $validator->messages()]);
     }
-    $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get()->toArray();
-    print_r(json_encode($user));die;
+    $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get();
     if($user){
         return response()->json([
             'status' => 'success',
