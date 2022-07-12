@@ -33,6 +33,7 @@ class UserController extends Controller
         return response()->json(['success' => false, 'error' => $validator->messages()]);
     }
     $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get()->toArray();
+    print_r(json_encode($user));die;
     if($user){
         return response()->json([
             'status' => 'success',
