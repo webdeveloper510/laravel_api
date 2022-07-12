@@ -31,7 +31,7 @@ class UserController extends Controller
     if ($validator->fails()) {
         return response()->json(['success' => false, 'error' => $validator->messages()]);
     }
-    $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get();
+    $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get()->toArray();
     if($user){
         echo "yesss";
         print_r($user);die;
