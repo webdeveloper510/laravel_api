@@ -33,6 +33,8 @@ class UserController extends Controller
     }
     $user = User::where(['email'=>$request->email,'password'=>md5($request->password)])->get();
     if($user){
+        echo "yesss";
+        print_r($user);die;
         return response()->json([
             'status' => 'success',
             'message' => 'User Login successfully',
