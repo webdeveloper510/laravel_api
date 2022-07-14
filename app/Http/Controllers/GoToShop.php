@@ -65,17 +65,14 @@ class GoToShop extends Controller
 
   function GoToShopShipping(GoToShopShipping $request){ 
     $validated = $request->validated();
-      $response = $request->all();
-      // $latLong = $this->getLatLong($response);    
-       //print_r(json_encode($response));die; 
-       $estimate = array();
-      $estimate['cabify'] =$this->GetEstimate($request->all());   
-          
-      $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
-      $estimate['fex'] =$this->FexCotizer($request->all());
-      $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
-      $key = $this->matchPrice($price_array);
-      $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result'],$estimate['cabify']['parcel_id']);
+    $response = $request->all();
+    $estimate = array();
+    $estimate['cabify'] =$this->GetEstimate($request->all());             
+    $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
+    $estimate['fex'] =$this->FexCotizer($request->all());
+    $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
+    $key = $this->matchPrice($price_array);
+    $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result'],$estimate['cabify']['parcel_id']);
   }
 
  
@@ -108,7 +105,13 @@ class GoToShop extends Controller
       $estimate['fex'] =$this->FexCotizer($request->all());
       $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
       $key = $this->matchPrice($price_array);
-      return $this->createEstimateWithPrice($key,$response,$estimate);  
+      $result = $this->createEstimateWithPrice($key,$response,$estimate);  
+      return response()->json([
+        'status' => 'success',
+        'user' =>$result,
+        'plateform'=>$key,
+        'parcel_id'=>$key=='cabify' ? $estimate['cabify']['parcel_id'] : ''
+    ],200);
     }
 
 

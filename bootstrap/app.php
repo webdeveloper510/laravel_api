@@ -19,7 +19,7 @@ $app = new Illuminate\Foundation\Application(
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: *');
 header('Access-Control-Allow-Headers: *');
-
+header('Content-Type: application/json; charset=utf-8');
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
