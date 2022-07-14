@@ -66,13 +66,14 @@ class GoToShop extends Controller
   function GoToShopShipping(GoToShopShipping $request){ 
     $validated = $request->validated();
     $response = $request->all();
-    $estimate = array();
-    $estimate['cabify'] =$this->GetEstimate($request->all());             
-    $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
-    $estimate['fex'] =$this->FexCotizer($request->all());
-    $price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
-    $key = $this->matchPrice($price_array);
-    $this->GoToShopCreateShipment($key,$request->all(),$estimate['cabify']['result'],$estimate['cabify']['parcel_id']);
+    //print_r($response);
+    // $estimate = array();
+    // $estimate['cabify'] =$this->GetEstimate($request->all());             
+    // $estimate['padidosya_estimate']= $this->EstimateShipping($request->all());
+    // $estimate['fex'] =$this->FexCotizer($request->all());
+    //$price_array = array('cabify'=>$estimate['cabify']['price'],'padidosya_estimate'=>$estimate['padidosya_estimate']['price'],'fex'=>$estimate['fex']['price']);
+    //$key = $this->matchPrice($price_array);
+    $this->GoToShopCreateShipment($request->plateform,$request->all(),$response['parcel']['result'],$response['parcel']['parcel_id']);
   }
 
  
@@ -110,7 +111,7 @@ class GoToShop extends Controller
         'status' => 'success',
         'user' =>$result,
         'plateform'=>$key,
-        'parcel_id'=>$key=='cabify' ? $estimate['cabify']['parcel_id'] : ''
+        'parcel'=>$key=='cabify' ? $estimate['cabify'] : ''
     ],200);
     }
 
@@ -709,34 +710,22 @@ function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate,
     $setResponse['status']='PREORDER';
     $setResponse['cancelCode']='';
     $setResponse['cancelReason']='';
-    $setResponse['referenceId']=$shipping['referenceId'];
+    $setResponse['referenceId']='Client-reference_'.$shipping['referenceId'];
     $setResponse['isTest']=$shipping['isTest'];
     $setResponse['deliveryTime']=$response['deliver_from'];
     $setResponse['lastUpdated']='';
-    $setResponse['createdAt']='';
-    $setResponse['expiresAt']='';
+    $setResponse['createdAt']=$response['created_at'];
+    $setResponse['expiresAt']=$response['updated_at'];
     $setResponse['items']=$shipping['items'];
     $setResponse['volume']=$shipping['volume'];
     $setResponse['weight']=$shipping['weight'];
     $setResponse['price']=$estimate['price'];
-    $setResponse['shareLocationUrl']='https://envios.pedidosya.com.uy/tracking/ODYzMjAxMTAyMTMwOTM0Njk0Njg3NCNBUEkjODYz';
-    $setResponse['proofOfDelivery']=true;
+    $setResponse['shareLocationUrl']='';
+    $setResponse['proofOfDelivery']=false;
     $setResponse['notificationMail']=$shipping['notificationMail'];
     $setResponse['waypoints']=$shipping['waypoints'];
-    $setResponse['onlineSupportUrl']='https://someOnlineSupportUrl.com';
-    // for($i=0;$i<count($response['data']['createDelivery']['deliveryPoints']);$i++){
-    //   $waypoints = $response['data']['createDelivery']['deliveryPoints'];
-    //   $setResponse['waypoints'][$i]['type'] = $waypoints[$i]['name'];
-    //   $setResponse['waypoints'][$i]['addressStreet'] = $waypoints[$i]['addr'];
-    //   $setResponse['waypoints'][$i]['addressAdditional'] = $waypoints[$i]['addr'];
-    //   $setResponse['waypoints'][$i]['city'] = $waypoints[$i]['city'];
-    //   $setResponse['waypoints'][$i]['latitude'] = $waypoints[$i]['loc'][0];
-    //   $setResponse['waypoints'][$i]['longitude'] = $waypoints[$i]['loc'][1];
-    //   $setResponse['waypoints'][$i]['phone'] =$shipping['waypoints'][$i]['phone'] ;
-    //   $setResponse['waypoints'][$i]['name'] ='';
-    //   $setResponse['waypoints'][$i]['instructions'] = $shipping['waypoints'][$i]['instructions'];
-    //   $setResponse['waypoints'][$i]['order'] = $shipping['waypoints'][$i]['order'];
-    // }
+    $setResponse['onlineSupportUrl']='';
+  
     return json_encode($setResponse); 
    }
 
@@ -762,10 +751,10 @@ function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate,
       'total'=>$response['resultado']['total'],
       'currency'=>'usd'
     );
-    $setResponse['shareLocationUrl']='https://envios.pedidosya.com.uy/tracking/ODYzMjAxMTAyMTMwOTM0Njk0Njg3NCNBUEkjODYz';
+    $setResponse['shareLocationUrl']='';
     $setResponse['proofOfDelivery']=true;
     $setResponse['notificationMail']=$shipping['notificationMail'];
-    $setResponse['onlineSupportUrl']='https://someOnlineSupportUrl.com';
+    $setResponse['onlineSupportUrl']='';
     return json_encode($setResponse); 
 
    }
