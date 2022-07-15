@@ -224,7 +224,7 @@ if(!empty($insert_data)){
   // $lastInsertedId= $shipment->id;
   // $shiiping_id= $data['id'];
   // $affectedRows = $shipment->where("id", $lastInsertedId)->update(["Shipping" =>$shipping_id]);
-  return ['Code'=>200,'message'=>'Saved Successfull!','response'=>$save];
+  return ['Code'=>200,'message'=>'Shipment Saved Successfull!','response'=>$save];
 
 }
 
@@ -714,8 +714,8 @@ function setShippingResponseAsPadidosya($response,$provider,$shipping,$estimate,
     $setResponse['isTest']=$shipping['isTest'];
     $setResponse['deliveryTime']=$response['deliver_from'];
     $setResponse['lastUpdated']='';
-    $setResponse['createdAt']=$response['created_at'];
-    $setResponse['expiresAt']=$response['updated_at'];
+    $setResponse['createdAt']=date('m/d/y');
+    $setResponse['expiresAt']=date('m/d/y');
     $setResponse['items']=$shipping['items'];
     $setResponse['volume']=$shipping['volume'];
     $setResponse['weight']=$shipping['weight'];
