@@ -20,3 +20,17 @@
 [27-Jun-2022 20:44:19 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
 [27-Jun-2022 20:52:09 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
 [27-Jun-2022 21:16:34 UTC] PHP Warning:  Header may not contain more than a single header, new line detected in /home/u00wh6mx0lgf/public_html/laravel_api/index.php on line 11
+[12-Jul-2022 00:51:19 UTC] PHP Fatal error:  Uncaught ReflectionException: Class config does not exist in /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php:877
+Stack trace:
+#0 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php(877): ReflectionClass->__construct('config')
+#1 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php(758): Illuminate\Container\Container->build('config')
+#2 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(851): Illuminate\Container\Container->resolve('config', Array, true)
+#3 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php(694): Illuminate\Foundation\Application->resolve('config', Array)
+#4 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(836): Illuminate\Container\Container->make('confi in /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 879
+[12-Jul-2022 00:51:19 UTC] PHP Fatal error:  Uncaught ReflectionException: Class config does not exist in /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php:877
+Stack trace:
+#0 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php(877): ReflectionClass->__construct('config')
+#1 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php(758): Illuminate\Container\Container->build('config')
+#2 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(851): Illuminate\Container\Container->resolve('config', Array, true)
+#3 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php(694): Illuminate\Foundation\Application->resolve('config', Array)
+#4 /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(836): Illuminate\Container\Container->make('confi in /home/u00wh6mx0lgf/public_html/laravel_api/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 879

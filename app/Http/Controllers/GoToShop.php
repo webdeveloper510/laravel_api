@@ -385,8 +385,12 @@ if(!empty($insert_data)){
          
          $resp = curl_exec($curl);
          curl_close($curl);
-          $data = json_decode($resp,true);
-     // print_r(json_encode($data));die;
+        // 
+         $data = json_decode($resp,true);
+         
+         //print_r($data);
+         
+          //print_r($data['price']['total']);die;
           
           return ['price'=>$data['price']['total'],'result'=>$data];
        }
